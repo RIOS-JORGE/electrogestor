@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Dark mode: toggle via .dark class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@variant dark {
+  body {
+    background-color: #030712; /* gray-950 */
+    color: #e5e7eb; /* gray-200 */
+  }
+}
+
 /* Print styles for quote preview */
 @media print {
   /* Hide navigation, sidebar, header, buttons, scrollbars, and all non-print elements */
