@@ -78,7 +78,12 @@ const navItems: NavItem[] = [
   },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showImportModal, setShowImportModal] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -133,7 +138,24 @@ export function Sidebar() {
   }, [pendingFile, addToast])
 
   return (
-    <aside className="flex w-64 flex-col border-r border-gray-200 bg-white">
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-gray-200 bg-white
+          transition-transform duration-300 ease-in-out
+          lg:static lg:translate-x-0
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
       {/* Logo / Brand */}
       <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
         <svg className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -238,5 +260,16 @@ export function Sidebar() {
         </div>
       </Modal>
     </aside>
-  )
-}
+
+    {/* Close button for mobile */}
+    <button
+      onClick={onClose}
+      className="fixed right-4 top-4 z-50 rounded-lg p-2 text-gray-400 hover:bg-gray-100 lg:hidden"
+      aria-label="Cerrar menú"
+    >
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </>
+)
