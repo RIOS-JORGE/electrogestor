@@ -11,7 +11,7 @@ export function ClientesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">Clientes</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Clientes</h2>
         <Link to="/clientes/nuevo">
           <Button>Nuevo cliente</Button>
         </Link>

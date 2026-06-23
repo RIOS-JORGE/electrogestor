@@ -24,7 +24,7 @@ export function AgendaFormPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Turno no encontrado</p>
+            <p className="text-gray-500 dark:text-gray-400">Turno no encontrado</p>
             <button
               onClick={() => navigate('/agenda')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -41,7 +41,7 @@ export function AgendaFormPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <Card>
         <CardHeader>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {id ? 'Editar turno' : 'Nuevo turno'}
           </h2>
         </CardHeader>

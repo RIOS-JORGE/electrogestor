@@ -48,22 +48,22 @@ export function Table<T>({
 
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-        <p className="text-gray-500">{emptyMessage}</p>
+      <div className="rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
+        <p className="text-gray-500 dark:text-gray-400">{emptyMessage}</p>
       </div>
     )
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 ${
-                  col.sortable ? 'cursor-pointer select-none hover:bg-gray-100' : ''
+                className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300 ${
+                  col.sortable ? 'cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-700' : ''
                 }`}
                 onClick={col.sortable ? () => handleSort(col.key) : undefined}
               >
@@ -79,17 +79,17 @@ export function Table<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
           {sortedData.map((item) => (
             <tr
               key={keyExtractor(item)}
-              className={`transition-colors hover:bg-gray-50 ${
+              className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
                 onRowClick ? 'cursor-pointer' : ''
               }`}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
               {columns.map((col) => (
-                <td key={col.key} className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
+                <td key={col.key} className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-gray-300">
                   {col.render
                     ? col.render(item)
                     : String((item as Record<string, unknown>)[col.key] ?? '')}

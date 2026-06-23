@@ -13,7 +13,7 @@ export function FacturacionPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
           Facturación
         </h2>
         <Link to="/facturacion/nueva">

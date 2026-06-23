@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuoteStore } from '../features/quoting/store'
 import { Badge } from '../shared/components/Badge'
@@ -9,6 +9,8 @@ import { Card, CardHeader, CardBody } from '../shared/components/Card'
 import { Modal } from '../shared/components/Modal'
 import { QuotePreview } from '../features/quoting/components/QuotePreview'
 import { useToast } from '../shared/hooks/useToast'
+import { useWebShare } from '../shared/hooks/useWebShare'
+import { generatePdfBlob, revokePdfUrl } from '../shared/utils/pdf'
 import { useInvoiceStore } from '../features/invoicing/store'
 import type { Invoice } from '../features/invoicing/types'
 import type { QuoteStatus, MaterialItem, LaborItem } from '../features/quoting/types'
@@ -82,11 +84,31 @@ export function CotizacionDetailPage() {
     }
   }, [quote])
 
+  const { sharePdf } = useWebShare()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = useCallback(() => {
     window.print()
   }, [])
+
+  const handleShare = useCallback(async () => {
+    if (!previewRef.current || !quote) return
+    setSharing(true)
+    try {
+      const element = previewRef.current
+      const { blob, url } = await generatePdfBlob(element)
+      const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
+      await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
+      revokePdfUrl(url)
+      addToast('Presupuesto compartido', 'success')
+    } catch {
+      addToast('Error al compartir el presupuesto', 'error')
+    } finally {
+      setSharing(false)
+    }
+  }, [quote, sharePdf, addToast])
 
   const handleStatusChange = useCallback(
     (newStatus: QuoteStatus) => {
@@ -154,7 +176,7 @@ export function CotizacionDetailPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Presupuesto no encontrado</p>
+            <p className="text-gray-500 dark:text-gray-400">Presupuesto no encontrado</p>
             <button
               onClick={() => navigate('/cotizaciones')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -195,7 +217,7 @@ export function CotizacionDetailPage() {
           >
             &larr; Volver
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Presupuesto #{quote.id.slice(0, 8).toUpperCase()}
           </h2>
           <Badge variant={STATUS_BADGE_VARIANTS[quote.status]}>
@@ -205,6 +227,14 @@ export function CotizacionDetailPage() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handlePrint}>
             Imprimir PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            disabled={sharing}
+          >
+            {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
           </Button>
           <DropdownMenu
             trigger={
@@ -230,8 +260,8 @@ export function CotizacionDetailPage() {
 
       {/* Status change */}
       {nextStatuses.length > 0 && (
-        <div className="no-print flex items-center gap-2 rounded-lg bg-gray-50 p-3">
-          <span className="text-sm font-medium text-gray-700">
+        <div className="no-print flex items-center gap-2 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Cambiar estado:
           </span>
           {nextStatuses.map((next) => (
@@ -249,8 +279,8 @@ export function CotizacionDetailPage() {
 
       {/* Generate invoice */}
       {quote.status === 'accepted' && (
-        <div className="no-print flex items-center gap-2 rounded-lg bg-green-50 p-3">
-          <span className="text-sm font-medium text-gray-700">
+        <div className="no-print flex items-center gap-2 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Facturación:
           </span>
           {existingInvoice ? (
@@ -273,19 +303,19 @@ export function CotizacionDetailPage() {
         {/* Client info */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Datos del cliente
             </h3>
           </CardHeader>
           <CardBody>
-            <p className="text-base font-medium text-gray-900">
+            <p className="text-base font-medium text-gray-900 dark:text-white">
               {quote.clientName}
             </p>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Creado el {formatDate(quote.createdAt)}
             </p>
             {quote.updatedAt !== quote.createdAt && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Última modificación: {formatDate(quote.updatedAt)}
               </p>
             )}
@@ -295,45 +325,45 @@ export function CotizacionDetailPage() {
         {/* Items */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">Items</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Items</h3>
           </CardHeader>
           <CardBody>
             {materials.length > 0 && (
               <div className="mb-6">
-                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Materiales
                 </h4>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Cant.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           P. Unit
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                       {materials.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                             {item.quantity} {item.unit}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.unitPrice)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
                             {formatCurrency(item.quantity * item.unitPrice)}
                           </td>
                         </tr>
@@ -346,40 +376,40 @@ export function CotizacionDetailPage() {
 
             {labors.length > 0 && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Mano de Obra
                 </h4>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Hs.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           $/h
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                       {labors.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                             {item.laborHours}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.hourlyRate)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
                             {formatCurrency(
                               item.laborHours * item.hourlyRate,
                             )}
@@ -397,29 +427,29 @@ export function CotizacionDetailPage() {
         {/* Totals */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">Totales</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Totales</h3>
           </CardHeader>
           <CardBody>
             <div className="ml-auto w-72 space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Subtotal</span>
                 <span>{formatCurrency(quote.subtotal)}</span>
               </div>
               {quote.iva != null && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>IVA ({quote.iva}%)</span>
                   <span>{formatCurrency(ivaAmount)}</span>
                 </div>
               )}
               {quote.discount != null && quote.discount > 0 && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>Descuento ({quote.discount}%)</span>
                   <span className="text-red-600">
                     -{formatCurrency(discountAmount)}
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-gray-900">
+              <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-gray-900 dark:border-gray-700 dark:text-white">
                 <span>Total</span>
                 <span>{formatCurrency(quote.total)}</span>
               </div>
@@ -431,10 +461,10 @@ export function CotizacionDetailPage() {
         {quote.notes && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-gray-900">Notas</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notas</h3>
             </CardHeader>
             <CardBody>
-              <p className="whitespace-pre-wrap text-sm text-gray-700">
+              <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
                 {quote.notes}
               </p>
             </CardBody>
@@ -442,8 +472,8 @@ export function CotizacionDetailPage() {
         )}
       </div>
 
-      {/* Preview for print */}
-      <div className="print-only print-block">
+      {/* Preview for print and share */}
+      <div className="print-only print-block" ref={previewRef}>
         <QuotePreview quote={quote} />
       </div>
 
@@ -454,7 +484,7 @@ export function CotizacionDetailPage() {
         title="Eliminar presupuesto"
         size="sm"
       >
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           ¿Estás seguro de que querés eliminar este presupuesto? Esta acción no
           se puede deshacer.
         </p>

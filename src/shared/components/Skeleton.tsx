@@ -8,7 +8,7 @@ interface SkeletonProps {
 export function Skeleton({ className = '' }: SkeletonProps) {
   return (
     <div
-      className={`animate-pulse rounded bg-gray-200 ${className}`}
+      className={`animate-pulse rounded bg-gray-200 dark:bg-gray-700 ${className}`}
       aria-hidden="true"
     />
   )
@@ -36,9 +36,9 @@ export function SkeletonTable({
   cols?: number
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr aria-hidden="true">
             {Array.from({ length: cols }).map((_, i) => (
               <th key={i} className="px-4 py-3">
@@ -47,7 +47,7 @@ export function SkeletonTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
           {Array.from({ length: rows }).map((_, i) => (
             <SkeletonRow key={i} cols={cols} />
           ))}
@@ -65,7 +65,7 @@ export function SkeletonCard({
 }) {
   return (
     <div
-      className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+      className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
       aria-hidden="true"
     >
       {children ?? (

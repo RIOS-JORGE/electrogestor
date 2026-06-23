@@ -108,7 +108,7 @@ export function CotizacionesPage() {
         key: 'shortId',
         header: 'Número',
         render: (q) => (
-          <span className="font-mono text-xs text-gray-500">
+          <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
             #{q.id.slice(0, 8).toUpperCase()}
           </span>
         ),
@@ -118,7 +118,7 @@ export function CotizacionesPage() {
         header: 'Fecha',
         sortable: true,
         render: (q) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {formatDate(q.createdAt)}
           </span>
         ),
@@ -128,7 +128,7 @@ export function CotizacionesPage() {
         header: 'Cliente',
         sortable: true,
         render: (q) => (
-          <span className="font-medium text-gray-900">{q.clientName}</span>
+          <span className="font-medium text-gray-900 dark:text-white">{q.clientName}</span>
         ),
       },
       {
@@ -136,7 +136,7 @@ export function CotizacionesPage() {
         header: 'Total',
         sortable: true,
         render: (q) => (
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-white">
             {formatCurrency(q.total)}
           </span>
         ),
@@ -196,7 +196,7 @@ export function CotizacionesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
           Cotizaciones
         </h2>
         <Link to="/cotizaciones/nueva">
@@ -213,8 +213,8 @@ export function CotizacionesPage() {
               onClick={() => setStatusFilter(f.key)}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === f.key
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
               }`}
             >
               {f.label}
@@ -229,7 +229,7 @@ export function CotizacionesPage() {
             placeholder="Buscar por cliente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500"
           />
         </div>
 
@@ -238,8 +238,8 @@ export function CotizacionesPage() {
           <SkeletonTable rows={5} cols={6} />
         ) : /* Empty state */
         quotes.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white py-16 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <div className="rounded-lg border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
               <svg
                 className="h-8 w-8 text-green-500"
                 fill="none"
@@ -254,10 +254,10 @@ export function CotizacionesPage() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               No hay presupuestos todavía
             </h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Creá tu primer presupuesto para empezar.
             </p>
             <Link to="/cotizaciones/nueva">
@@ -287,7 +287,7 @@ export function CotizacionesPage() {
         title={`¿Eliminar presupuesto de ${deleteTarget?.clientName}?`}
         size="sm"
       >
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           Esta acción no se puede deshacer.
         </p>
         <div className="flex justify-end gap-3">
