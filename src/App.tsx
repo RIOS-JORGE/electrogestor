@@ -16,6 +16,7 @@ import { AgendaDetailPage } from './pages/AgendaDetailPage'
 import { InventarioPage } from './pages/InventarioPage'
 import { InventarioFormPage } from './pages/InventarioFormPage'
 import { InventarioDetailPage } from './pages/InventarioDetailPage'
+import { AjustesPage } from './pages/Ajustes'
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path="/inventario/nuevo" element={<InventarioFormPage />} />
             <Route path="/inventario/:id" element={<InventarioDetailPage />} />
             <Route path="/inventario/:id/editar" element={<InventarioFormPage />} />
+            <Route path="/ajustes" element={<AjustesPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
