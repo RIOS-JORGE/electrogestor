@@ -57,7 +57,7 @@ export function InventarioDetailPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Producto no encontrado</p>
+            <p className="text-gray-500 dark:text-gray-400">Producto no encontrado</p>
             <button
               onClick={() => navigate('/inventario')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -85,14 +85,14 @@ export function InventarioDetailPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/inventario')}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             aria-label="Volver"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-2xl font-semibold text-gray-900">{product.name}</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{product.name}</h2>
           <Badge variant={STATUS_VARIANTS[status]}>
             {STATUS_LABELS[status]}
           </Badge>
@@ -104,28 +104,28 @@ export function InventarioDetailPage() {
         <CardBody className="space-y-6">
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm font-medium text-gray-500">Categoría</dt>
-              <dd className="mt-1 text-sm text-gray-900">{categoryLabel}</dd>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoría</dt>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-200">{categoryLabel}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Unidad</dt>
-              <dd className="mt-1 text-sm text-gray-900">{unitLabel}</dd>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Unidad</dt>
+              <dd className="mt-1 text-sm text-gray-900 dark:text-gray-200">{unitLabel}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Stock actual</dt>
-              <dd className="mt-1 text-lg font-semibold tabular-nums text-gray-900">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Stock actual</dt>
+              <dd className="mt-1 text-lg font-semibold tabular-nums text-gray-900 dark:text-white">
                 {product.stock}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Stock mínimo</dt>
-              <dd className="mt-1 text-sm tabular-nums text-gray-900">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Stock mínimo</dt>
+              <dd className="mt-1 text-sm tabular-nums text-gray-900 dark:text-gray-200">
                 {product.minStock}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-gray-500">Precio unitario</dt>
-              <dd className="mt-1 text-sm tabular-nums text-gray-900">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Precio unitario</dt>
+              <dd className="mt-1 text-sm tabular-nums text-gray-900 dark:text-gray-200">
                 {formatCurrency(product.unitPrice)}
               </dd>
             </div>
@@ -133,8 +133,8 @@ export function InventarioDetailPage() {
 
           {product.notes && (
             <div>
-              <dt className="text-sm font-medium text-gray-500">Notas</dt>
-              <dd className="mt-1 whitespace-pre-wrap text-sm text-gray-900">
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Notas</dt>
+              <dd className="mt-1 whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-200">
                 {product.notes}
               </dd>
             </div>
@@ -164,7 +164,7 @@ export function InventarioDetailPage() {
       {/* Movement history */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Historial de movimientos
           </h3>
         </CardHeader>
@@ -187,7 +187,7 @@ export function InventarioDetailPage() {
         title={`¿Eliminar ${product.name}?`}
         size="sm"
       >
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           Se eliminará el producto y todo su historial de movimientos. Esta acción
           no se puede deshacer.
         </p>

@@ -23,7 +23,7 @@ export function FacturacionDetailPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Factura no encontrada</p>
+            <p className="text-gray-500 dark:text-gray-400">Factura no encontrada</p>
             <button
               onClick={() => navigate('/facturacion')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"

@@ -22,7 +22,7 @@ export function CotizacionFormPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Presupuesto no encontrado</p>
+            <p className="text-gray-500 dark:text-gray-400">Presupuesto no encontrado</p>
             <button
               onClick={() => navigate('/cotizaciones')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -39,7 +39,7 @@ export function CotizacionFormPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <Card>
         <CardHeader>
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {id ? 'Editar presupuesto' : 'Nuevo presupuesto'}
           </h2>
         </CardHeader>

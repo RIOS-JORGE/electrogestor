@@ -292,3 +292,4 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     </button>
   </>
 )
+}

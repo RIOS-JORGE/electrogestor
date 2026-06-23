@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="flex min-h-[50vh] items-center justify-center p-8">
           <div className="max-w-md text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
               <svg
                 className="h-8 w-8 text-red-600"
                 fill="none"
@@ -48,18 +48,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Algo salió mal
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               Ocurrió un error inesperado. Recargá la página para continuar.
             </p>
             {this.state.error && (
               <details className="mt-4 text-left">
-                <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+                <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                   Ver detalle técnico
                 </summary>
-                <pre className="mt-2 overflow-auto rounded bg-gray-100 p-3 text-xs text-red-700">
+                <pre className="mt-2 overflow-auto rounded bg-gray-100 p-3 text-xs text-red-700 dark:bg-gray-800">
                   {this.state.error.message}
                 </pre>
               </details>

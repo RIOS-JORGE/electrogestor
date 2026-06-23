@@ -34,7 +34,7 @@ export function AgendaDetailPage() {
       <div className="space-y-6">
         <Card padding="lg">
           <div className="py-12 text-center">
-            <p className="text-gray-500">Turno no encontrado</p>
+            <p className="text-gray-500 dark:text-gray-400">Turno no encontrado</p>
             <button
               onClick={() => navigate('/agenda')}
               className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -63,7 +63,7 @@ export function AgendaDetailPage() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/agenda')}
-          className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700"
+          className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           <svg
             className="h-4 w-4"
@@ -91,7 +91,7 @@ export function AgendaDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {appointment.title}
             </h2>
             <Badge variant={STATUS_BADGE_VARIANTS[appointment.status]}>
@@ -102,10 +102,10 @@ export function AgendaDetailPage() {
         <CardBody className="space-y-4">
           {/* Client */}
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
               Cliente
             </p>
-            <p className="mt-1 text-sm text-gray-900">
+            <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
               {appointment.clientId ? (
                 <Link
                   to={`/clientes/${appointment.clientId}`}
@@ -122,29 +122,29 @@ export function AgendaDetailPage() {
           {/* Date, time, duration */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                Fecha
-              </p>
-              <p className="mt-1 text-sm text-gray-900">
-                {appointment.date}
-              </p>
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  Fecha
+                </p>
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
+                  {appointment.date}
+                </p>
             </div>
             {appointment.time && (
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   Hora
                 </p>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                   {appointment.time}
                 </p>
               </div>
             )}
             {appointment.duration && (
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   Duración
                 </p>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                   {appointment.duration} min
                 </p>
               </div>
@@ -154,10 +154,10 @@ export function AgendaDetailPage() {
           {/* Address */}
           {appointment.address && (
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Dirección
               </p>
-              <p className="mt-1 text-sm text-gray-900">
+              <p className="mt-1 text-sm text-gray-900 dark:text-gray-200">
                 {appointment.address}
               </p>
             </div>
@@ -166,10 +166,10 @@ export function AgendaDetailPage() {
           {/* Notes */}
           {appointment.notes && (
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Notas
               </p>
-              <p className="mt-1 whitespace-pre-wrap text-sm text-gray-900">
+              <p className="mt-1 whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-200">
                 {appointment.notes}
               </p>
             </div>
@@ -180,7 +180,7 @@ export function AgendaDetailPage() {
       {/* Status actions */}
       <Card>
         <CardBody>
-          <p className="mb-3 text-sm font-medium text-gray-700">Acciones</p>
+          <p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">Acciones</p>
           <div className="flex flex-wrap gap-2">
             {isScheduled && (
               <>
@@ -238,7 +238,7 @@ export function AgendaDetailPage() {
         title="Eliminar turno"
         size="sm"
       >
-        <p className="mb-4 text-sm text-gray-600">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           ¿Estás seguro de que querés eliminar el turno{' '}
           <strong>{appointment.title}</strong>? Esta acción no se puede
           deshacer.
