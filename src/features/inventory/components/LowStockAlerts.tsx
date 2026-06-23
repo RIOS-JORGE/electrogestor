@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardBody } from '../../../shared/components/Card'
 import { Badge } from '../../../shared/components/Badge'
@@ -5,7 +6,11 @@ import { useInventoryStore } from '../store'
 import { getStockStatus } from '../types'
 
 export function LowStockAlerts() {
-  const lowStockProducts = useInventoryStore((s) => s.getLowStockProducts())
+  const products = useInventoryStore((s) => s.products)
+  const lowStockProducts = useMemo(
+    () => products.filter((p) => p.stock <= p.minStock),
+    [products],
+  )
 
   if (lowStockProducts.length === 0) {
     return (

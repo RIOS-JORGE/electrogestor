@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Badge } from '../../../shared/components/Badge'
 import { useInventoryStore } from '../store'
 import type { StockMovement, MovementType } from '../types'
@@ -34,7 +35,14 @@ interface MovementHistoryProps {
 }
 
 export function MovementHistory({ productId }: MovementHistoryProps) {
-  const movements = useInventoryStore((s) => s.getMovementsByProduct(productId))
+  const allMovements = useInventoryStore((s) => s.movements)
+  const movements = useMemo(
+    () =>
+      allMovements
+        .filter((m) => m.productId === productId)
+        .sort((a, b) => b.createdAt - a.createdAt),
+    [allMovements, productId],
+  )
 
   if (movements.length === 0) {
     return (
