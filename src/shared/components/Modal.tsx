@@ -48,17 +48,17 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       {/* Content */}
       <div
-        className={`relative z-10 w-full ${sizeStyles[size]} rounded-lg bg-white p-6 shadow-xl`}
+        className={`relative z-10 w-full ${sizeStyles[size]} rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900 dark:border dark:border-gray-800`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
       >
         {title && (
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
             <button
               onClick={onClose}
-              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
               aria-label="Cerrar"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

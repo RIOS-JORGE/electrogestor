@@ -2,9 +2,9 @@ import { useToastStore } from '../hooks/useToast'
 import type { ToastType } from '../hooks/useToast'
 
 const typeStyles: Record<ToastType, string> = {
-  success: 'bg-green-600 text-white',
-  error: 'bg-red-600 text-white',
-  info: 'bg-gray-800 text-white',
+  success: 'bg-green-600 text-white dark:bg-green-900 dark:text-gray-100',
+  error: 'bg-red-600 text-white dark:bg-red-900 dark:text-gray-100',
+  info: 'bg-gray-800 text-white dark:bg-blue-900 dark:text-gray-100',
 }
 
 const typeIcons: Record<ToastType, React.ReactNode> = {
@@ -45,7 +45,7 @@ export function ToastContainer() {
           <span>{toast.message}</span>
           <button
             onClick={() => removeToast(toast.id)}
-            className="ml-2 rounded p-0.5 opacity-70 hover:opacity-100"
+            className="ml-2 rounded p-0.5 opacity-70 hover:opacity-100 dark:text-gray-300"
             aria-label="Cerrar"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

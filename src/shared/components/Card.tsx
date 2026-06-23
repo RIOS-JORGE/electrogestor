@@ -18,7 +18,7 @@ const paddingStyles: Record<CardPadding, string> = {
 export function Card({ children, padding = 'md', className = '' }: CardProps) {
   return (
     <div
-      className={`rounded-lg border border-gray-200 bg-white shadow-sm ${paddingStyles[padding]} ${className}`}
+      className={`rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900 ${paddingStyles[padding]} ${className}`}
     >
       {children}
     </div>
@@ -26,7 +26,7 @@ export function Card({ children, padding = 'md', className = '' }: CardProps) {
 }
 
 export function CardHeader({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`mb-4 border-b border-gray-100 pb-4 ${className}`}>{children}</div>
+  return <div className={`mb-4 border-b border-gray-100 pb-4 dark:border-gray-800 ${className}`}>{children}</div>
 }
 
 export function CardBody({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -34,5 +34,5 @@ export function CardBody({ children, className = '' }: { children: ReactNode; cl
 }
 
 export function CardFooter({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`mt-4 border-t border-gray-100 pt-4 ${className}`}>{children}</div>
+  return <div className={`mt-4 border-t border-gray-100 pt-4 dark:border-gray-800 ${className}`}>{children}</div>
 }
