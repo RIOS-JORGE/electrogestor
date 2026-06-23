@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* Print styles for quote preview */
+@media print {
+  /* Hide navigation, sidebar, header, buttons, scrollbars, and all non-print elements */
+  nav,
+  header,
+  .sidebar,
+  .no-print,
+  button,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Hide scrollbars on html/body */
+  html {
+    overflow: hidden !important;
+  }
+
+  body {
+    overflow: hidden !important;
+    background: white !important;
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Show print-only elements — full width guaranteed */
+  .print-only {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    visibility: visible !important;
+  }
+
+  /* Main content area: full width, no padding for print */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Print container: ensure it takes full width */
+  .print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Quote preview table borders */
+  .quote-items td,
+  .quote-items th {
+    border: 1px solid #000 !important;
+    padding: 8px;
+  }
+
+  /* Avoid page breaks inside table rows */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  h1, h2, h3, h4 {
+    page-break-after: avoid;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+}
+
+/* Hidden by default, shown only in print */
+.print-only {
+  display: none;
+}
+
+/* Print container background */
+.print-container {
+  background: white;
+}
