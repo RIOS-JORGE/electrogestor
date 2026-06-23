@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuoteStore } from '../features/quoting/store'
 import { Badge } from '../shared/components/Badge'
@@ -9,6 +9,8 @@ import { Card, CardHeader, CardBody } from '../shared/components/Card'
 import { Modal } from '../shared/components/Modal'
 import { QuotePreview } from '../features/quoting/components/QuotePreview'
 import { useToast } from '../shared/hooks/useToast'
+import { useWebShare } from '../shared/hooks/useWebShare'
+import { generatePdfBlob, revokePdfUrl } from '../shared/utils/pdf'
 import { useInvoiceStore } from '../features/invoicing/store'
 import type { Invoice } from '../features/invoicing/types'
 import type { QuoteStatus, MaterialItem, LaborItem } from '../features/quoting/types'
@@ -82,11 +84,31 @@ export function CotizacionDetailPage() {
     }
   }, [quote])
 
+  const { sharePdf } = useWebShare()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   const handlePrint = useCallback(() => {
     window.print()
   }, [])
+
+  const handleShare = useCallback(async () => {
+    if (!previewRef.current || !quote) return
+    setSharing(true)
+    try {
+      const element = previewRef.current
+      const { blob, url } = await generatePdfBlob(element)
+      const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
+      await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
+      revokePdfUrl(url)
+      addToast('Presupuesto compartido', 'success')
+    } catch {
+      addToast('Error al compartir el presupuesto', 'error')
+    } finally {
+      setSharing(false)
+    }
+  }, [quote, sharePdf, addToast])
 
   const handleStatusChange = useCallback(
     (newStatus: QuoteStatus) => {
@@ -205,6 +227,14 @@ export function CotizacionDetailPage() {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handlePrint}>
             Imprimir PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            disabled={sharing}
+          >
+            {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
           </Button>
           <DropdownMenu
             trigger={
@@ -442,8 +472,8 @@ export function CotizacionDetailPage() {
         )}
       </div>
 
-      {/* Preview for print */}
-      <div className="print-only print-block">
+      {/* Preview for print and share */}
+      <div className="print-only print-block" ref={previewRef}>
         <QuotePreview quote={quote} />
       </div>
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useInvoiceStore } from '../store'
 import { Badge } from '../../../shared/components/Badge'
@@ -6,6 +6,8 @@ import { Button } from '../../../shared/components/Button'
 import { Card, CardHeader, CardBody } from '../../../shared/components/Card'
 import { Modal } from '../../../shared/components/Modal'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useWebShare } from '../../../shared/hooks/useWebShare'
+import { generatePdfBlob, revokePdfUrl } from '../../../shared/utils/pdf'
 import { InvoicePreview } from './InvoicePreview'
 import type { Invoice, InvoiceStatus } from '../types'
 import type { MaterialItem, LaborItem } from '../../quoting/types'
@@ -67,8 +69,11 @@ interface InvoiceDetailProps {
 export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const updateInvoiceStatus = useInvoiceStore((s) => s.updateInvoiceStatus)
   const { addToast } = useToast()
+  const { sharePdf } = useWebShare()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<InvoiceStatus | null>(null)
+  const [sharing, setSharing] = useState(false)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   const materials = invoice.items.filter(
     (i): i is MaterialItem => i.type === 'material',
@@ -87,6 +92,23 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const handlePrint = useCallback(() => {
     window.print()
   }, [])
+
+  const handleShare = useCallback(async () => {
+    if (!previewRef.current) return
+    setSharing(true)
+    try {
+      const element = previewRef.current
+      const { blob, url } = await generatePdfBlob(element)
+      const message = `ElectroGestor - Factura ${invoice.number} - Total: $${invoice.total.toFixed(2)}`
+      await sharePdf(blob, `factura-${invoice.number}.pdf`, message)
+      revokePdfUrl(url)
+      addToast('Factura compartida', 'success')
+    } catch {
+      addToast('Error al compartir la factura', 'error')
+    } finally {
+      setSharing(false)
+    }
+  }, [invoice, sharePdf, addToast])
 
   const handleStatusChange = useCallback(
     (newStatus: InvoiceStatus) => {
@@ -117,11 +139,11 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         <div className="flex items-center gap-3">
           <Link
             to="/facturacion"
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
           >
             &larr; Volver
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             Factura {invoice.number}
           </h2>
           <Badge variant={STATUS_BADGE_VARIANTS[invoice.status]}>
@@ -132,13 +154,21 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
           <Button variant="outline" size="sm" onClick={handlePrint}>
             Imprimir PDF
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleShare}
+            disabled={sharing}
+          >
+            {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
+          </Button>
         </div>
       </div>
 
       {/* Status change */}
       {nextStatuses.length > 0 && (
-        <div className="no-print flex items-center gap-2 rounded-lg bg-gray-50 p-3">
-          <span className="text-sm font-medium text-gray-700">
+        <div className="no-print flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 p-3">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Cambiar estado:
           </span>
           {nextStatuses.map((next) => (
@@ -158,54 +188,54 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {/* Invoice header */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
               Datos de la factura
             </h3>
           </CardHeader>
           <CardBody>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Número
                 </p>
-                <p className="mt-1 font-mono text-sm font-semibold text-gray-900">
+                <p className="mt-1 font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {invoice.number}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Fecha de creación
                 </p>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                   {formatDate(invoice.createdAt)}
                 </p>
               </div>
               {invoice.issuedAt && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Fecha de emisión
                   </p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {formatDate(invoice.issuedAt)}
                   </p>
                 </div>
               )}
               {invoice.dueDate && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Vencimiento
                   </p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {formatDate(invoice.dueDate)}
                   </p>
                 </div>
               )}
               {invoice.paidAt && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     Fecha de pago
                   </p>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {formatDate(invoice.paidAt)}
                   </p>
                 </div>
@@ -218,11 +248,11 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {invoice.quoteId && (
           <Card>
             <CardBody>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ver cotización origen:{' '}
                 <Link
                   to={`/cotizaciones/${invoice.quoteId}`}
-                  className="font-medium text-blue-600 hover:text-blue-800"
+                  className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   #{invoice.quoteId.slice(0, 8).toUpperCase()}
                 </Link>
@@ -234,12 +264,12 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {/* Client info */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
               Datos del cliente
             </h3>
           </CardHeader>
           <CardBody>
-            <p className="text-base font-medium text-gray-900">
+            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
               {invoice.clientName}
             </p>
           </CardBody>
@@ -248,45 +278,45 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {/* Items */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">Items</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Items</h3>
           </CardHeader>
           <CardBody>
             {materials.length > 0 && (
               <div className="mb-6">
-                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Materiales
                 </h4>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Cant.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           P. Unit
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                       {materials.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800/50">
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                             {item.quantity} {item.unit}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.unitPrice)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
                             {formatCurrency(item.quantity * item.unitPrice)}
                           </td>
                         </tr>
@@ -299,40 +329,40 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
 
             {labors.length > 0 && (
               <div>
-                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+                <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Mano de Obra
                 </h4>
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Hs.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           $/h
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Subtotal
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                       {labors.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
+                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800/50">
+                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                             {item.laborHours}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.hourlyRate)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900">
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
                             {formatCurrency(
                               item.laborHours * item.hourlyRate,
                             )}
@@ -350,29 +380,29 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {/* Totals */}
         <Card>
           <CardHeader>
-            <h3 className="text-lg font-medium text-gray-900">Totales</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Totales</h3>
           </CardHeader>
           <CardBody>
             <div className="ml-auto w-72 space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Subtotal</span>
                 <span>{formatCurrency(invoice.subtotal)}</span>
               </div>
               {invoice.iva != null && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>IVA ({invoice.iva}%)</span>
                   <span>{formatCurrency(ivaAmount)}</span>
                 </div>
               )}
               {invoice.discount != null && invoice.discount > 0 && (
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>Descuento ({invoice.discount}%)</span>
-                  <span className="text-red-600">
+                  <span className="text-red-600 dark:text-red-400">
                     -{formatCurrency(discountAmount)}
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-gray-900">
+              <div className="flex justify-between border-t border-gray-300 dark:border-gray-600 pt-2 text-lg font-bold text-gray-900 dark:text-gray-100">
                 <span>Total</span>
                 <span>{formatCurrency(invoice.total)}</span>
               </div>
@@ -384,10 +414,10 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         {invoice.notes && (
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-gray-900">Notas</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Notas</h3>
             </CardHeader>
             <CardBody>
-              <p className="whitespace-pre-wrap text-sm text-gray-700">
+              <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
                 {invoice.notes}
               </p>
             </CardBody>
@@ -395,8 +425,8 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         )}
       </div>
 
-      {/* Preview for print */}
-      <div className="print-only print-block">
+      {/* Preview for print and share */}
+      <div className="print-only print-block" ref={previewRef}>
         <InvoicePreview invoice={invoice} />
       </div>
 
@@ -410,7 +440,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         title="Cancelar factura"
         size="sm"
       >
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           ¿Estás seguro de que querés cancelar esta factura? Esta acción no se
           puede deshacer.
         </p>
