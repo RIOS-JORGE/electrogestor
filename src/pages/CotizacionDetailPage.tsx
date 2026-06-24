@@ -105,6 +105,35 @@ export function CotizacionDetailPage() {
     el.style.position = 'absolute'
     el.style.left = '-9999px'
     el.style.top = '0'
+
+    // Inject style overrides so html2canvas can parse colors (it doesn't support oklch)
+    const colorFix = document.createElement('style')
+    colorFix.id = 'pdf-color-fix'
+    colorFix.textContent = `
+      .print-container, .print-container * {
+        color: inherit !important;
+        background-color: inherit !important;
+        border-color: inherit !important;
+      }
+      .text-gray-900 { color: #111827 !important; }
+      .text-gray-700 { color: #374151 !important; }
+      .text-gray-600 { color: #4b5563 !important; }
+      .text-gray-500 { color: #6b7280 !important; }
+      .text-gray-400 { color: #9ca3af !important; }
+      .text-gray-300 { color: #d1d5db !important; }
+      .text-black { color: #000000 !important; }
+      .text-red-600 { color: #dc2626 !important; }
+      .text-white { color: #ffffff !important; }
+      .text-blue-600 { color: #2563eb !important; }
+      .bg-white { background-color: #ffffff !important; }
+      .bg-gray-50 { background-color: #f9fafb !important; }
+      .border-gray-300 { border-color: #d1d5db !important; }
+      .border-gray-200 { border-color: #e5e7eb !important; }
+      .border-gray-100 { border-color: #f3f4f6 !important; }
+    `
+    el.prepend(colorFix)
+
+    // Force the element itself to have light background and black text
     el.style.setProperty('background', '#ffffff', 'important')
     el.style.setProperty('color', '#000000', 'important')
     try {
@@ -125,6 +154,9 @@ export function CotizacionDetailPage() {
       el.style.top = ''
       el.style.background = ''
       el.style.color = ''
+      // Remove the injected color fix style
+      const fix = document.getElementById('pdf-color-fix')
+      if (fix) fix.remove()
       setSharing(false)
     }
   }, [quote, sharePdf, addToast])
