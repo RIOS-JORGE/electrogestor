@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom'
 import { Card } from '../shared/components/Card'
 import { Button } from '../shared/components/Button'
 import { InvoiceList } from '../features/invoicing/components/InvoiceList'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 
 export function FacturacionPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)')
+
   useEffect(() => {
     document.title = 'Facturación | ElectroGestor'
   }, [])
@@ -21,9 +24,13 @@ export function FacturacionPage() {
         </Link>
       </div>
 
-      <Card padding="lg">
+      {isMobile ? (
         <InvoiceList />
-      </Card>
+      ) : (
+        <Card padding="lg">
+          <InvoiceList />
+        </Card>
+      )}
     </div>
   )
 }

@@ -4,8 +4,11 @@ import { Card } from '../shared/components/Card'
 import { Button } from '../shared/components/Button'
 import { InventoryList } from '../features/inventory/components/InventoryList'
 import { LowStockAlerts } from '../features/inventory/components/LowStockAlerts'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 
 export function InventarioPage() {
+  const isMobile = useMediaQuery('(max-width: 767px)')
+
   useEffect(() => {
     document.title = 'Inventario | ElectroGestor'
   }, [])
@@ -26,9 +29,13 @@ export function InventarioPage() {
       <LowStockAlerts />
 
       {/* Product list */}
-      <Card padding="lg">
+      {isMobile ? (
         <InventoryList />
-      </Card>
+      ) : (
+        <Card padding="lg">
+          <InventoryList />
+        </Card>
+      )}
     </div>
   )
 }

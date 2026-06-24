@@ -206,145 +206,149 @@ export function CotizacionesPage() {
         </Link>
       </div>
 
-      <Card padding="lg">
-        {/* Status tabs */}
-        <div className="mb-4 flex flex-wrap gap-1">
-          {STATUS_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                statusFilter === f.key
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
-              }`}
+      {/* Status tabs */}
+      <div className="mb-4 flex flex-wrap gap-1">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setStatusFilter(f.key)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              statusFilter === f.key
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="mb-4 max-w-sm">
+        <input
+          type="text"
+          placeholder="Buscar por cliente..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500"
+        />
+      </div>
+
+      {/* Loading state */}
+      {isLoading ? (
+        <SkeletonTable rows={5} cols={6} />
+      ) : /* Empty state */
+      quotes.length === 0 ? (
+        <div className="rounded-lg border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+            <svg
+              className="h-8 w-8 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="mb-4 max-w-sm">
-          <input
-            type="text"
-            placeholder="Buscar por cliente..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500"
-          />
-        </div>
-
-        {/* Loading state */}
-        {isLoading ? (
-          <SkeletonTable rows={5} cols={6} />
-        ) : /* Empty state */
-        quotes.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-              <svg
-                className="h-8 w-8 text-green-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              No hay presupuestos todavía
-            </h3>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Creá tu primer presupuesto para empezar.
-            </p>
-            <Link to="/cotizaciones/nueva">
-              <Button className="mt-4">Nueva cotización</Button>
-            </Link>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
           </div>
-        ) : isMobile ? (
-          <div className="space-y-3">
-            {filtered.length === 0 ? (
-              <div className="rounded-lg border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-900">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {statusFilter !== 'all' || search
-                    ? 'No se encontraron presupuestos con esos filtros'
-                    : 'No hay presupuestos. Creá tu primer presupuesto.'}
-                </p>
-              </div>
-            ) : (
-              filtered.map((q) => (
-                <div
-                  key={q.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900"
-                  onClick={() => navigate(`/cotizaciones/${q.id}`)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                      <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
-                        #{q.id.slice(0, 8).toUpperCase()}
-                      </span>
-                      <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
-                        {q.clientName}
-                      </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(q.total)}
-                        </span>
-                        <Badge variant={STATUS_BADGE_VARIANTS[q.status]}>
-                          {STATUS_LABELS[q.status]}
-                        </Badge>
-                      </div>
-                      <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
-                        {formatDate(q.createdAt)}
-                      </span>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            No hay presupuestos todavía
+          </h3>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Creá tu primer presupuesto para empezar.
+          </p>
+          <Link to="/cotizaciones/nueva">
+            <Button className="mt-4">Nueva cotización</Button>
+          </Link>
+        </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {filtered.length === 0 ? (
+            <div className="rounded-lg border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-900">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {statusFilter !== 'all' || search
+                  ? 'No se encontraron presupuestos con esos filtros'
+                  : 'No hay presupuestos. Creá tu primer presupuesto.'}
+              </p>
+            </div>
+          ) : (
+            filtered.map((q) => (
+              <div
+                key={q.id}
+                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                onClick={() => navigate(`/cotizaciones/${q.id}`)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                      #{q.id.slice(0, 8).toUpperCase()}
+                    </span>
+                    <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                      {q.clientName}
                     </div>
-                    <div
-                      className="ml-2 flex items-center gap-1"
-                      onClick={(e) => e.stopPropagation()}
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {formatCurrency(q.total)}
+                      </span>
+                      <Badge variant={STATUS_BADGE_VARIANTS[q.status]}>
+                        {STATUS_LABELS[q.status]}
+                      </Badge>
+                    </div>
+                    <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
+                      {formatDate(q.createdAt)}
+                    </span>
+                  </div>
+                  <div
+                    className="ml-2 flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Link to={`/cotizaciones/${q.id}/editar`}>
+                      <button
+                        className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                        aria-label="Editar"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDuplicate(q)
+                      }}
+                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                      aria-label="Duplicar"
                     >
-                      <Link to={`/cotizaciones/${q.id}`}>
-                        <Button variant="ghost" size="sm">
-                          Ver
-                        </Button>
-                      </Link>
-                      <Link to={`/cotizaciones/${q.id}/editar`}>
-                        <Button variant="ghost" size="sm">
-                          Editar
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDuplicate(q)
-                        }}
-                      >
-                        Duplicar
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteTarget(q)
-                        }}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteTarget(q)
+                      }}
+                      className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500 dark:hover:bg-gray-800 dark:hover:text-red-400"
+                      aria-label="Eliminar"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        ) : (
-          /* Table */
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Table */
+        <Card padding="lg">
           <Table
             columns={columns}
             data={filtered}
@@ -356,8 +360,8 @@ export function CotizacionesPage() {
             keyExtractor={(q) => q.id}
             onRowClick={(q) => navigate(`/cotizaciones/${q.id}`)}
           />
-        )}
-      </Card>
+        </Card>
+      )}
 
       {/* Delete modal */}
       <Modal
