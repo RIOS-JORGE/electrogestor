@@ -6,6 +6,7 @@ import { Button } from '../shared/components/Button'
 import { Card } from '../shared/components/Card'
 import { Modal } from '../shared/components/Modal'
 import { SkeletonTable } from '../shared/components/Skeleton'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 import { useToast } from '../shared/hooks/useToast'
 import { Table, type Column } from '../shared/components/Table'
 import type { Quote, QuoteStatus } from '../features/quoting/types'
@@ -54,6 +55,7 @@ export function CotizacionesPage() {
   const deleteQuote = useQuoteStore((s) => s.deleteQuote)
   const addQuote = useQuoteStore((s) => s.addQuote)
   const { addToast } = useToast()
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all')
@@ -263,6 +265,83 @@ export function CotizacionesPage() {
             <Link to="/cotizaciones/nueva">
               <Button className="mt-4">Nueva cotización</Button>
             </Link>
+          </div>
+        ) : isMobile ? (
+          <div className="space-y-3">
+            {filtered.length === 0 ? (
+              <div className="rounded-lg border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-900">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {statusFilter !== 'all' || search
+                    ? 'No se encontraron presupuestos con esos filtros'
+                    : 'No hay presupuestos. Creá tu primer presupuesto.'}
+                </p>
+              </div>
+            ) : (
+              filtered.map((q) => (
+                <div
+                  key={q.id}
+                  className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                  onClick={() => navigate(`/cotizaciones/${q.id}`)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+                        #{q.id.slice(0, 8).toUpperCase()}
+                      </span>
+                      <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                        {q.clientName}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {formatCurrency(q.total)}
+                        </span>
+                        <Badge variant={STATUS_BADGE_VARIANTS[q.status]}>
+                          {STATUS_LABELS[q.status]}
+                        </Badge>
+                      </div>
+                      <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
+                        {formatDate(q.createdAt)}
+                      </span>
+                    </div>
+                    <div
+                      className="ml-2 flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link to={`/cotizaciones/${q.id}`}>
+                        <Button variant="ghost" size="sm">
+                          Ver
+                        </Button>
+                      </Link>
+                      <Link to={`/cotizaciones/${q.id}/editar`}>
+                        <Button variant="ghost" size="sm">
+                          Editar
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDuplicate(q)
+                        }}
+                      >
+                        Duplicar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeleteTarget(q)
+                        }}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         ) : (
           /* Table */
