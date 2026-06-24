@@ -41,7 +41,7 @@ export function AppointmentCard({ appointment, onClick, onEdit }: AppointmentCar
   return (
     <>
       <div
-        className={`cursor-pointer border-l-4 ${STATUS_BORDER_COLORS[appointment.status]} rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md`}
+        className={`cursor-pointer border-l-4 ${STATUS_BORDER_COLORS[appointment.status]} rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm transition-shadow hover:shadow-md`}
         onClick={() => onClick?.(appointment)}
         role="button"
         tabIndex={0}
@@ -52,7 +52,7 @@ export function AppointmentCard({ appointment, onClick, onEdit }: AppointmentCar
         <div className="p-4">
           {/* Header: title + status badge */}
           <div className="mb-2 flex items-start justify-between gap-2">
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               {appointment.title}
             </h3>
             <Badge variant={STATUS_BADGE_VARIANTS[appointment.status]}>
@@ -61,12 +61,12 @@ export function AppointmentCard({ appointment, onClick, onEdit }: AppointmentCar
           </div>
 
           {/* Client name */}
-          <p className="mb-1 text-sm text-gray-600">
+          <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">
             <span className="font-medium">Cliente:</span> {appointment.clientName}
           </p>
 
           {/* Date and time */}
-          <div className="mb-3 flex items-center gap-3 text-sm text-gray-500">
+          <div className="mb-3 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
             <span>{appointment.date}</span>
             {timeDisplay && (
               <>
@@ -151,7 +151,7 @@ export function AppointmentCard({ appointment, onClick, onEdit }: AppointmentCar
         title="Eliminar turno"
         size="sm"
       >
-        <p className="mb-4 text-sm text-gray-600">
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           ¿Estás seguro de que querés eliminar el turno <strong>{appointment.title}</strong>?
           Esta acción no se puede deshacer.
         </p>

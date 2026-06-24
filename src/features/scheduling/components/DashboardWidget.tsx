@@ -33,7 +33,7 @@ export function DashboardWidget() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">Turnos hoy</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Turnos hoy</p>
             <p className="text-3xl font-bold text-blue-600">{todayCount}</p>
           </div>
           <Button
@@ -48,7 +48,7 @@ export function DashboardWidget() {
       <CardBody>
         {upcomingAppointments.length > 0 ? (
           <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Próximos turnos
             </p>
             {upcomingAppointments.map((appointment) => (
@@ -61,7 +61,7 @@ export function DashboardWidget() {
             ))}
           </div>
         ) : (
-          <p className="py-6 text-center text-sm text-gray-400">
+          <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
             No hay próximos turnos programados
           </p>
         )}

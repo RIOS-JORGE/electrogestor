@@ -214,7 +214,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
       <form>
         <Card padding="lg">
           <CardHeader>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {isEditMode ? 'Editar presupuesto' : 'Nuevo presupuesto'}
             </h2>
           </CardHeader>
@@ -222,7 +222,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
           <CardBody className="space-y-8">
             {/* Section 1: Client selection */}
             <section>
-              <h3 className="mb-4 text-lg font-medium text-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-gray-200">
                 1. Cliente
               </h3>
 
@@ -232,11 +232,11 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
                   id="use-existing-client"
                   checked={useExistingClient}
                   onChange={(e) => handleUseExistingToggle(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                  className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600"
                 />
                 <label
                   htmlFor="use-existing-client"
-                  className="text-sm text-gray-700"
+                  className="text-sm text-gray-700 dark:text-gray-300"
                 >
                   Usar cliente existente
                 </label>
@@ -259,7 +259,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
 
             {/* Section 2: Items table */}
             <section>
-              <h3 className="mb-4 text-lg font-medium text-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-gray-200">
                 2. Items
               </h3>
 
@@ -283,7 +283,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
               </div>
 
               {fields.length === 0 ? (
-                <p className={`text-sm ${itemsRootError ? 'text-red-600' : 'text-gray-400'}`}>
+                <p className={`text-sm ${itemsRootError ? 'text-red-600 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
                   Agregá al menos un material o mano de obra para comenzar.
                 </p>
               ) : (
@@ -311,7 +311,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
               )}
 
               {itemsRootError && (
-                <p className="mt-2 text-sm text-red-600" role="alert">
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">
                   {itemsRootError}
                 </p>
               )}
@@ -319,13 +319,13 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
 
             {/* Section 3: Notes */}
             <section>
-              <h3 className="mb-4 text-lg font-medium text-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-gray-200">
                 Notas
               </h3>
               <div className="space-y-1">
                 <label
                   htmlFor="notes"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Notas adicionales
                 </label>
@@ -333,15 +333,15 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
                   id="notes"
                   rows={3}
                   placeholder="Condiciones de pago, validez de la cotización, etc."
-                  className={`block w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
+                  className={`block w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-0 ${
                     errors.notes
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500 dark:border-red-500'
+                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200'
                   }`}
                   {...register('notes')}
                 />
                 {errors.notes && (
-                  <p className="text-sm text-red-600" role="alert">
+                  <p className="text-sm text-red-600 dark:text-red-400" role="alert">
                     {errors.notes.message}
                   </p>
                 )}
@@ -350,14 +350,14 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
 
             {/* Section 4: IVA and discount */}
             <section>
-              <h3 className="mb-4 text-lg font-medium text-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-gray-200">
                 Impuestos y descuentos
               </h3>
               <div className="flex flex-wrap gap-6">
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600"
                     {...register('includeIVA')}
                   />
                   Incluir IVA (21%)
@@ -380,7 +380,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
 
             {/* Section 5: Summary */}
             <section>
-              <h3 className="mb-4 text-lg font-medium text-gray-800">
+              <h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-gray-200">
                 Resumen
               </h3>
               <QuoteSummary
@@ -391,7 +391,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
             </section>
 
             {/* Actions */}
-            <div className="no-print flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
+            <div className="no-print flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-700 pt-6">
               <Button
                 type="button"
                 variant="outline"

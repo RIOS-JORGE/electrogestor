@@ -85,7 +85,7 @@ export function InventoryList() {
         header: 'Producto',
         sortable: true,
         render: (p) => (
-          <span className="font-medium text-gray-900">{p.name}</span>
+          <span className="font-medium text-gray-900 dark:text-white">{p.name}</span>
         ),
       },
       {
@@ -93,7 +93,7 @@ export function InventoryList() {
         header: 'Categoría',
         sortable: true,
         render: (p) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {CATEGORY_OPTIONS_LABELED.find((c) => c.value === p.category)?.label ?? p.category}
           </span>
         ),
@@ -107,7 +107,7 @@ export function InventoryList() {
           return (
             <div className="flex items-center gap-2">
               <span className="font-semibold tabular-nums">{p.stock}</span>
-              <span className="text-xs text-gray-400">{p.unit}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{p.unit}</span>
               <Badge variant={STATUS_BADGE_VARIANTS[status]}>
                 {STATUS_BADGE_LABELS[status]}
               </Badge>
@@ -119,7 +119,7 @@ export function InventoryList() {
         key: 'minStock',
         header: 'Stock mín.',
         render: (p) => (
-          <span className="tabular-nums text-gray-600">{p.minStock}</span>
+          <span className="tabular-nums text-gray-600 dark:text-gray-400">{p.minStock}</span>
         ),
       },
       {
@@ -127,7 +127,7 @@ export function InventoryList() {
         header: 'Precio',
         sortable: true,
         render: (p) => (
-          <span className="tabular-nums text-gray-600">
+          <span className="tabular-nums text-gray-600 dark:text-gray-400">
             {formatCurrency(p.unitPrice)}
           </span>
         ),
@@ -174,8 +174,8 @@ export function InventoryList() {
             onClick={() => setCategoryFilter(f.key)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               categoryFilter === f.key
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             {f.label}
@@ -190,7 +190,7 @@ export function InventoryList() {
           placeholder="Buscar por nombre..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -199,8 +199,8 @@ export function InventoryList() {
         <SkeletonTable rows={5} cols={6} />
       ) : /* Empty state */
       products.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white py-16 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
             <svg
               className="h-8 w-8 text-blue-500"
               fill="none"
@@ -215,10 +215,10 @@ export function InventoryList() {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             No hay productos
           </h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Registrá tu primer producto para empezar a controlar el inventario.
           </p>
           <Link to="/inventario/nuevo">
@@ -247,7 +247,7 @@ export function InventoryList() {
         title={`¿Eliminar ${deleteTarget?.name}?`}
         size="sm"
       >
-        <p className="mb-6 text-sm text-gray-600">
+        <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
           Se eliminará el producto y todo su historial de movimientos. Esta acción no se puede deshacer.
         </p>
         <div className="flex justify-end gap-3">

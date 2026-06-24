@@ -56,7 +56,7 @@ export function SettingsForm() {
               {...register('businessName')}
             />
 
-            <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-6">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-700 pt-6">
               <Button
                 type="submit"
                 variant="primary"

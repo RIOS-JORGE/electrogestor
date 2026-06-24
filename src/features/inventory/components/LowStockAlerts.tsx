@@ -29,7 +29,7 @@ export function LowStockAlerts() {
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span className="text-green-700">
+          <span className="text-green-700 dark:text-green-400">
             Todo en orden — no hay productos por reponer
           </span>
         </CardBody>
@@ -39,7 +39,7 @@ export function LowStockAlerts() {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-gray-700">
+      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
         Productos por reponer ({lowStockProducts.length})
       </h3>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -56,10 +56,10 @@ export function LowStockAlerts() {
                 <CardBody>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-gray-900">
+                      <p className="truncate font-medium text-gray-900 dark:text-white">
                         {product.name}
                       </p>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Stock: <span className="font-semibold tabular-nums">{product.stock}</span>
                         {' / '}
                         Mín: <span className="font-semibold tabular-nums">{product.minStock}</span>
@@ -72,7 +72,7 @@ export function LowStockAlerts() {
                     </Badge>
                   </div>
                   {shortage > 0 && (
-                    <p className="mt-2 text-sm font-medium text-orange-600">
+                    <p className="mt-2 text-sm font-medium text-orange-600 dark:text-orange-400">
                       Faltan {shortage} {product.unit}
                       {shortage !== 1 ? 's' : ''} para alcanzar el mínimo
                     </p>

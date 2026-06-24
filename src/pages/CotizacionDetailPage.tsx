@@ -96,9 +96,13 @@ export function CotizacionDetailPage() {
   const handleShare = useCallback(async () => {
     if (!previewRef.current || !quote) return
     setSharing(true)
+    const el = previewRef.current
+    // Temporarily show for capture
+    el.style.display = 'block'
+    el.style.position = 'absolute'
+    el.style.left = '-9999px'
     try {
-      const element = previewRef.current
-      const { blob, url } = await generatePdfBlob(element)
+      const { blob, url } = await generatePdfBlob(el)
       const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
       await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
       revokePdfUrl(url)
@@ -106,6 +110,9 @@ export function CotizacionDetailPage() {
     } catch {
       addToast('Error al compartir el presupuesto', 'error')
     } finally {
+      el.style.display = ''
+      el.style.position = ''
+      el.style.left = ''
       setSharing(false)
     }
   }, [quote, sharePdf, addToast])
@@ -430,7 +437,7 @@ export function CotizacionDetailPage() {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Totales</h3>
           </CardHeader>
           <CardBody>
-            <div className="ml-auto w-72 space-y-2">
+            <div className="ml-auto w-full sm:w-72 space-y-2">
               <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Subtotal</span>
                 <span>{formatCurrency(quote.subtotal)}</span>

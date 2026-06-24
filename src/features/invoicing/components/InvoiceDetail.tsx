@@ -96,9 +96,13 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const handleShare = useCallback(async () => {
     if (!previewRef.current) return
     setSharing(true)
+    const el = previewRef.current
+    // Temporarily show for capture
+    el.style.display = 'block'
+    el.style.position = 'absolute'
+    el.style.left = '-9999px'
     try {
-      const element = previewRef.current
-      const { blob, url } = await generatePdfBlob(element)
+      const { blob, url } = await generatePdfBlob(el)
       const message = `ElectroGestor - Factura ${invoice.number} - Total: $${invoice.total.toFixed(2)}`
       await sharePdf(blob, `factura-${invoice.number}.pdf`, message)
       revokePdfUrl(url)
@@ -106,6 +110,9 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     } catch {
       addToast('Error al compartir la factura', 'error')
     } finally {
+      el.style.display = ''
+      el.style.position = ''
+      el.style.left = ''
       setSharing(false)
     }
   }, [invoice, sharePdf, addToast])
@@ -383,7 +390,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Totales</h3>
           </CardHeader>
           <CardBody>
-            <div className="ml-auto w-72 space-y-2">
+            <div className="ml-auto w-full sm:w-72 space-y-2">
               <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Subtotal</span>
                 <span>{formatCurrency(invoice.subtotal)}</span>

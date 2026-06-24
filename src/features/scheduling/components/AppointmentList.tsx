@@ -82,8 +82,8 @@ export function AppointmentList({
 
   if (appointments.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 py-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
           <svg
             className="h-8 w-8 text-blue-500"
             fill="none"
@@ -98,10 +98,10 @@ export function AppointmentList({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           No hay turnos programados
         </h3>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           Programá tu primer turno para empezar a gestionar tu agenda.
         </p>
         {onCreateNew && (
@@ -126,7 +126,7 @@ export function AppointmentList({
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === opt.value
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               {opt.label}
@@ -135,7 +135,7 @@ export function AppointmentList({
         </div>
 
         <div className="py-12 text-center">
-          <p className="text-gray-500">No hay turnos con ese estado</p>
+          <p className="text-gray-500 dark:text-gray-400">No hay turnos con ese estado</p>
         </div>
       </div>
     )
@@ -153,7 +153,7 @@ export function AppointmentList({
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               statusFilter === opt.value
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {opt.label}
@@ -165,9 +165,9 @@ export function AppointmentList({
       <div className="space-y-8">
         {sections.map((section) => (
           <section key={section.key}>
-            <h2 className="mb-3 text-lg font-semibold text-gray-800">
+            <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-gray-200">
               {section.label}
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="ml-2 text-sm font-normal text-gray-400 dark:text-gray-500">
                 ({section.items.length})
               </span>
             </h2>

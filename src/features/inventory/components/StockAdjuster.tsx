@@ -52,14 +52,14 @@ export function StockAdjuster({ productId, isOpen, onClose }: StockAdjusterProps
     <Modal isOpen={isOpen} onClose={handleClose} title={`Ajustar stock: ${product.name}`} size="sm">
       <div className="space-y-4">
         {/* Current stock */}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Stock actual:{' '}
-          <span className="font-semibold text-gray-900">{product.stock}</span>
+          <span className="font-semibold text-gray-900 dark:text-white">{product.stock}</span>
         </p>
 
         {/* Type selector */}
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Tipo de movimiento
           </label>
           <div className="flex gap-2">
@@ -70,8 +70,8 @@ export function StockAdjuster({ productId, isOpen, onClose }: StockAdjusterProps
                 onClick={() => setType(opt.value)}
                 className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                   type === opt.value
-                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 ring-1 ring-blue-300 dark:ring-blue-700'
+                    : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
                 {opt.label}
@@ -82,16 +82,16 @@ export function StockAdjuster({ productId, isOpen, onClose }: StockAdjusterProps
 
         {/* Quantity */}
         <div className="space-y-1">
-          <label htmlFor="adjust-qty" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="adjust-qty" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Cantidad
             {!isAdjustment && type === 'in' && (
-              <span className="ml-1 text-green-600">(se sumará al stock)</span>
+              <span className="ml-1 text-green-600 dark:text-green-400">(se sumará al stock)</span>
             )}
             {!isAdjustment && type === 'out' && (
-              <span className="ml-1 text-red-600">(se restará del stock)</span>
+              <span className="ml-1 text-red-600 dark:text-red-400">(se restará del stock)</span>
             )}
             {isAdjustment && (
-              <span className="ml-1 text-gray-500">(usá valores negativos para restar)</span>
+              <span className="ml-1 text-gray-500 dark:text-gray-400">(usá valores negativos para restar)</span>
             )}
           </label>
           <input
@@ -108,8 +108,8 @@ export function StockAdjuster({ productId, isOpen, onClose }: StockAdjusterProps
 
         {/* Reason */}
         <div className="space-y-1">
-          <label htmlFor="adjust-reason" className="block text-sm font-medium text-gray-700">
-            Motivo <span className="text-gray-400">(opcional)</span>
+          <label htmlFor="adjust-reason" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Motivo <span className="text-gray-400 dark:text-gray-500">(opcional)</span>
           </label>
           <input
             id="adjust-reason"
@@ -122,7 +122,7 @@ export function StockAdjuster({ productId, isOpen, onClose }: StockAdjusterProps
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
+        <div className="flex justify-end gap-3 border-t border-gray-100 dark:border-gray-700 pt-4">
           <Button variant="outline" onClick={handleClose}>
             Cancelar
           </Button>

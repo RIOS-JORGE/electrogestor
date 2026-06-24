@@ -7,7 +7,7 @@ export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen overflow-x-hidden bg-gray-50 dark:bg-gray-950">
       {/* Mobile hamburger button */}
       <button
         onClick={() => setSidebarOpen(true)}
@@ -22,7 +22,7 @@ export function Layout() {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <header className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div className="flex h-16 items-center justify-between px-6">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">ElectroGestor</h1>
           </div>

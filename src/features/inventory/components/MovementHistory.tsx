@@ -46,35 +46,35 @@ export function MovementHistory({ productId }: MovementHistoryProps) {
 
   if (movements.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-gray-400">
+      <p className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
         Sin movimientos registrados
       </p>
     )
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Fecha
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Tipo
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Cantidad
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Motivo
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
           {movements.map((m) => (
-            <tr key={m.id} className="transition-colors hover:bg-gray-50">
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+            <tr key={m.id} className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
+              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                 {formatDate(m.createdAt)}
               </td>
               <td className="whitespace-nowrap px-4 py-3">
@@ -82,10 +82,10 @@ export function MovementHistory({ productId }: MovementHistoryProps) {
                   {MOVEMENT_TYPE_LABELS[m.type]}
                 </Badge>
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums text-gray-900">
+              <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums text-gray-900 dark:text-white">
                 {formatQuantity(m)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                 {m.reason || '—'}
               </td>
             </tr>
