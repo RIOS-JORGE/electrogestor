@@ -100,22 +100,32 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     if (!previewRef.current) return
     setSharing(true)
     const el = previewRef.current
-    // Temporarily show for capture
-    el.style.display = 'block'
+    // Temporarily show for capture — force white bg + black text
+    // to prevent dark mode from leaking into the PDF capture
+    el.style.setProperty('display', 'block', 'important')
     el.style.position = 'absolute'
     el.style.left = '-9999px'
+    el.style.top = '0'
+    el.style.setProperty('background', '#ffffff', 'important')
+    el.style.setProperty('color', '#000000', 'important')
     try {
+      // Wait one frame for the browser to render the element
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       const { blob, url } = await generatePdfBlob(el)
       const message = `ElectroGestor - Factura ${invoice.number} - Total: $${invoice.total.toFixed(2)}`
       await sharePdf(blob, `factura-${invoice.number}.pdf`, message)
       revokePdfUrl(url)
       addToast('PDF listo. Compartilo desde el visor o adjuntalo en WhatsApp.', 'success')
-    } catch {
+    } catch (err) {
+      console.error('Error al compartir factura:', err)
       addToast('Error al compartir la factura', 'error')
     } finally {
       el.style.display = ''
       el.style.position = ''
       el.style.left = ''
+      el.style.top = ''
+      el.style.background = ''
+      el.style.color = ''
       setSharing(false)
     }
   }, [invoice, sharePdf, addToast])

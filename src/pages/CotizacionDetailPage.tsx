@@ -99,22 +99,32 @@ export function CotizacionDetailPage() {
     if (!previewRef.current || !quote) return
     setSharing(true)
     const el = previewRef.current
-    // Temporarily show for capture
-    el.style.display = 'block'
+    // Temporarily show for capture — force white bg + black text
+    // to prevent dark mode from leaking into the PDF capture
+    el.style.setProperty('display', 'block', 'important')
     el.style.position = 'absolute'
     el.style.left = '-9999px'
+    el.style.top = '0'
+    el.style.setProperty('background', '#ffffff', 'important')
+    el.style.setProperty('color', '#000000', 'important')
     try {
+      // Wait one frame for the browser to render the element
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       const { blob, url } = await generatePdfBlob(el)
       const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
       await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
       revokePdfUrl(url)
       addToast('PDF listo. Compartilo desde el visor o adjuntalo en WhatsApp.', 'success')
-    } catch {
+    } catch (err) {
+      console.error('Error al compartir presupuesto:', err)
       addToast('Error al compartir el presupuesto', 'error')
     } finally {
       el.style.display = ''
       el.style.position = ''
       el.style.left = ''
+      el.style.top = ''
+      el.style.background = ''
+      el.style.color = ''
       setSharing(false)
     }
   }, [quote, sharePdf, addToast])
