@@ -57,16 +57,16 @@ export function MovementHistory({ productId }: MovementHistoryProps) {
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
         <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Fecha
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Tipo
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Cantidad
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Motivo
             </th>
           </tr>
@@ -74,18 +74,18 @@ export function MovementHistory({ productId }: MovementHistoryProps) {
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
           {movements.map((m) => (
             <tr key={m.id} className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+              <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                 {formatDate(m.createdAt)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3">
+              <td className="whitespace-nowrap px-2 sm:px-4 py-3">
                 <Badge variant={MOVEMENT_TYPE_VARIANTS[m.type]}>
                   {MOVEMENT_TYPE_LABELS[m.type]}
                 </Badge>
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums text-gray-900 dark:text-white">
+              <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right font-medium tabular-nums text-gray-900 dark:text-white">
                 {formatQuantity(m)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+              <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                 {m.reason || '—'}
               </td>
             </tr>

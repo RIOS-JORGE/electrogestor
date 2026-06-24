@@ -10,6 +10,7 @@ import { Modal } from '../shared/components/Modal'
 import { QuotePreview } from '../features/quoting/components/QuotePreview'
 import { useToast } from '../shared/hooks/useToast'
 import { useWebShare } from '../shared/hooks/useWebShare'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 import { generatePdfBlob, revokePdfUrl } from '../shared/utils/pdf'
 import { useInvoiceStore } from '../features/invoicing/store'
 import type { Invoice } from '../features/invoicing/types'
@@ -88,6 +89,7 @@ export function CotizacionDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [sharing, setSharing] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const handlePrint = useCallback(() => {
     window.print()
@@ -217,51 +219,80 @@ export function CotizacionDetailPage() {
     <div className="space-y-6">
       {/* Top bar */}
       <div className="no-print flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             to="/cotizaciones"
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 shrink-0"
           >
             &larr; Volver
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white min-w-0 truncate">
             Presupuesto #{quote.id.slice(0, 8).toUpperCase()}
           </h2>
-          <Badge variant={STATUS_BADGE_VARIANTS[quote.status]}>
+          <Badge variant={STATUS_BADGE_VARIANTS[quote.status]} className="shrink-0">
             {STATUS_LABELS[quote.status]}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handlePrint}>
-            Imprimir PDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            disabled={sharing}
-          >
-            {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
-          </Button>
-          <DropdownMenu
-            trigger={
-              <Button variant="outline" size="sm">
-                Acciones ▾
+          {isMobile ? (
+            <DropdownMenu
+              trigger={
+                <Button variant="outline" size="sm">
+                  Acciones ▾
+                </Button>
+              }
+              items={[
+                { label: 'Imprimir PDF', onClick: handlePrint },
+                {
+                  label: sharing ? 'Compartiendo...' : 'Compartir por WhatsApp',
+                  onClick: handleShare,
+                },
+                {
+                  label: 'Editar',
+                  href: `/cotizaciones/${quote.id}/editar`,
+                },
+                { label: 'Duplicar', onClick: handleDuplicate },
+                {
+                  label: 'Eliminar',
+                  onClick: () => setShowDeleteModal(true),
+                  danger: true,
+                },
+              ]}
+            />
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={handlePrint}>
+                Imprimir PDF
               </Button>
-            }
-            items={[
-              {
-                label: 'Editar',
-                href: `/cotizaciones/${quote.id}/editar`,
-              },
-              { label: 'Duplicar', onClick: handleDuplicate },
-              {
-                label: 'Eliminar',
-                onClick: () => setShowDeleteModal(true),
-                danger: true,
-              },
-            ]}
-          />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                disabled={sharing}
+              >
+                {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
+              </Button>
+              <DropdownMenu
+                trigger={
+                  <Button variant="outline" size="sm">
+                    Acciones ▾
+                  </Button>
+                }
+                items={[
+                  {
+                    label: 'Editar',
+                    href: `/cotizaciones/${quote.id}/editar`,
+                  },
+                  { label: 'Duplicar', onClick: handleDuplicate },
+                  {
+                    label: 'Eliminar',
+                    onClick: () => setShowDeleteModal(true),
+                    danger: true,
+                  },
+                ]}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -344,16 +375,16 @@ export function CotizacionDetailPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Cant.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           P. Unit
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Subtotal
                         </th>
                       </tr>
@@ -361,16 +392,16 @@ export function CotizacionDetailPage() {
                     <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                       {materials.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {item.quantity} {item.unit}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-200">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.unitPrice)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                             {formatCurrency(item.quantity * item.unitPrice)}
                           </td>
                         </tr>
@@ -390,16 +421,16 @@ export function CotizacionDetailPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Hs.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           $/h
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                           Subtotal
                         </th>
                       </tr>
@@ -407,16 +438,16 @@ export function CotizacionDetailPage() {
                     <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
                       {labors.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {item.laborHours}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-200">
+                          <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-200">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.hourlyRate)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-white">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                             {formatCurrency(
                               item.laborHours * item.hourlyRate,
                             )}

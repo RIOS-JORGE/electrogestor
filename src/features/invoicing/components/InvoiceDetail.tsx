@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom'
 import { useInvoiceStore } from '../store'
 import { Badge } from '../../../shared/components/Badge'
 import { Button } from '../../../shared/components/Button'
+import { DropdownMenu } from '../../../shared/components/DropdownMenu'
 import { Card, CardHeader, CardBody } from '../../../shared/components/Card'
 import { Modal } from '../../../shared/components/Modal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { useWebShare } from '../../../shared/hooks/useWebShare'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
 import { generatePdfBlob, revokePdfUrl } from '../../../shared/utils/pdf'
 import { InvoicePreview } from './InvoicePreview'
 import type { Invoice, InvoiceStatus } from '../types'
@@ -74,6 +76,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const [pendingStatus, setPendingStatus] = useState<InvoiceStatus | null>(null)
   const [sharing, setSharing] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const materials = invoice.items.filter(
     (i): i is MaterialItem => i.type === 'material',
@@ -143,32 +146,51 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     <div className="space-y-6">
       {/* Top bar */}
       <div className="no-print flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             to="/facturacion"
-            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 shrink-0"
           >
             &larr; Volver
           </Link>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 min-w-0 truncate">
             Factura {invoice.number}
           </h2>
-          <Badge variant={STATUS_BADGE_VARIANTS[invoice.status]}>
+          <Badge variant={STATUS_BADGE_VARIANTS[invoice.status]} className="shrink-0">
             {STATUS_LABELS[invoice.status]}
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handlePrint}>
-            Imprimir PDF
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleShare}
-            disabled={sharing}
-          >
-            {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
-          </Button>
+          {isMobile ? (
+            <DropdownMenu
+              trigger={
+                <Button variant="outline" size="sm">
+                  Acciones ▾
+                </Button>
+              }
+              items={[
+                { label: 'Imprimir PDF', onClick: handlePrint },
+                {
+                  label: sharing ? 'Compartiendo...' : 'Compartir por WhatsApp',
+                  onClick: handleShare,
+                },
+              ]}
+            />
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={handlePrint}>
+                Imprimir PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                disabled={sharing}
+              >
+                {sharing ? 'Compartiendo...' : 'Compartir por WhatsApp'}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -200,7 +222,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
             </h3>
           </CardHeader>
           <CardBody>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Número
@@ -297,16 +319,16 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Cant.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           P. Unit
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Subtotal
                         </th>
                       </tr>
@@ -314,16 +336,16 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                       {materials.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800/50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {item.quantity} {item.unit}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                          <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.unitPrice)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
                             {formatCurrency(item.quantity * item.unitPrice)}
                           </td>
                         </tr>
@@ -343,16 +365,16 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-800/50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Hs.
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Descripción
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           $/h
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           Subtotal
                         </th>
                       </tr>
@@ -360,16 +382,16 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
                       {labors.map((item) => (
                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800/50">
-                          <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {item.laborHours}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                          <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm text-gray-900 dark:text-gray-100">
                             {item.description}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700 dark:text-gray-300">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                             {formatCurrency(item.hourlyRate)}
                           </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <td className="whitespace-nowrap px-2 sm:px-4 py-3 text-right text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
                             {formatCurrency(
                               item.laborHours * item.hourlyRate,
                             )}

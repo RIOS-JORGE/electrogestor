@@ -81,19 +81,19 @@ export function InventarioDetailPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={() => navigate('/inventario')}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="shrink-0 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             aria-label="Volver"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{product.name}</h2>
-          <Badge variant={STATUS_VARIANTS[status]}>
+          <h2 className="min-w-0 truncate text-2xl font-semibold text-gray-900 dark:text-white">{product.name}</h2>
+          <Badge variant={STATUS_VARIANTS[status]} className="shrink-0">
             {STATUS_LABELS[status]}
           </Badge>
         </div>
