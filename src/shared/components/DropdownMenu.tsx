@@ -40,7 +40,7 @@ export function DropdownMenu({ trigger, items }: DropdownMenuProps) {
     <div ref={ref} className="relative inline-block">
       <div onClick={() => setOpen(!open)}>{trigger}</div>
       {open && (
-        <div className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute left-0 z-50 mt-1 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-900 sm:left-auto sm:right-0">
           {items.map((item, i) => {
             const base =
               'block w-full px-4 py-2 text-left text-sm transition-colors'
