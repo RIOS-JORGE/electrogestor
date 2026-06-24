@@ -106,7 +106,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
       const message = `ElectroGestor - Factura ${invoice.number} - Total: $${invoice.total.toFixed(2)}`
       await sharePdf(blob, `factura-${invoice.number}.pdf`, message)
       revokePdfUrl(url)
-      addToast('Factura compartida', 'success')
+      addToast('PDF descargado. Adjuntalo en WhatsApp.', 'success')
     } catch {
       addToast('Error al compartir la factura', 'error')
     } finally {

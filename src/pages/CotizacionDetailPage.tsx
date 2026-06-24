@@ -106,7 +106,7 @@ export function CotizacionDetailPage() {
       const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
       await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
       revokePdfUrl(url)
-      addToast('Presupuesto compartido', 'success')
+      addToast('PDF descargado. Adjuntalo en WhatsApp.', 'success')
     } catch {
       addToast('Error al compartir el presupuesto', 'error')
     } finally {
