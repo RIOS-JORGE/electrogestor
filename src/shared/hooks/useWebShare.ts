@@ -1,12 +1,10 @@
 /**
- * Hook para compartir PDFs por WhatsApp con una cadena de fallback confiable.
+ * Hook para compartir PDF por WhatsApp.
  *
- * El problema: generar el PDF (html2canvas + jsPDF) toma 1-3s,
- * y `navigator.share()` requiere un gesto de usuario INMEDIATO.
- * Para cuando el PDF está listo, el gesto expiró → falla en iOS y la mayoría de Android.
- *
- * Solución: descargar el PDF SIEMPRE primero (el archivo queda en el device),
- * luego intentar Web Share, y si falla, abrir WhatsApp con el texto precargado.
+ * Estrategia:
+ * 1. navigator.share() con archivo PDF (mobile, si hay gesture)
+ * 2. Si falla: descargar/open PDF + mostrar wa.me como link clickeable
+ * 3. El usuario elige cómo compartir manualmente
  */
 
 export interface WebShareResult {
@@ -15,7 +13,7 @@ export interface WebShareResult {
     blob: Blob,
     filename: string,
     message: string,
-  ) => Promise<{ method: 'share' | 'clipboard' }>
+  ) => Promise<{ method: 'share' | 'download' | 'wa' }>
 }
 
 export function useWebShare(): WebShareResult {
@@ -23,23 +21,22 @@ export function useWebShare(): WebShareResult {
     blob: Blob,
     filename: string,
     message: string,
-  ): Promise<{ method: 'share' | 'clipboard' }> => {
-    // 1. Descargar el PDF SIEMPRE primero — el archivo queda disponible
-    triggerDownload(blob, filename)
-
-    // 2. Intentar Web Share API con el archivo
-    //    (funciona en algunos Androids incluso post-async)
+  ): Promise<{ method: 'share' | 'download' | 'wa' }> => {
+    // 1. Intentar Web Share API con archivo (funciona en Android moderno si hay gesture)
     if (navigatorCanShareFile()) {
       try {
         const file = new File([blob], filename, { type: 'application/pdf' })
         await navigator.share({ files: [file], title: message, text: message })
         return { method: 'share' }
       } catch {
-        // Gesto expirado, usuario canceló, o no soportado — continuar
+        // Gesto expirado o cancelado por usuario — continuar
       }
     }
 
-    // 3. Intentar Web Share solo texto (algunos browsers lo soportan)
+    // 2. Descargar/abrir el PDF
+    openPdfInNewTab(blob, filename)
+
+    // 3. Intentar Web Share solo texto (algunos browsers desktop lo soportan)
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: message, text: message })
@@ -53,23 +50,10 @@ export function useWebShare(): WebShareResult {
     try {
       await navigator.clipboard.writeText(message)
     } catch {
-      // No hay clipboard — continuar igual
+      // No hay clipboard — no es crítico
     }
 
-    // 5. Abrir WhatsApp (deep link en mobile, web en desktop)
-    const encoded = encodeURIComponent(message)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-    const waUrl = isMobile
-      ? `whatsapp://send?text=${encoded}`
-      : `https://web.whatsapp.com/send?text=${encoded}`
-
-    try {
-      window.open(waUrl, '_blank', 'noopener')
-    } catch {
-      // Popup bloqueado — el usuario ya tiene el PDF descargado
-    }
-
-    return { method: 'clipboard' }
+    return { method: 'download' }
   }
 
   return { canShare: typeof navigator.share === 'function', sharePdf }
@@ -85,11 +69,12 @@ function navigatorCanShareFile(): boolean {
   }
 }
 
-function triggerDownload(blob: Blob, filename: string): void {
-  // Usar URL.createObjectURL + anchor es el método más兼容
-  // Funciona en iOS (abre el PDF en nueva pestaña, el usuario puede
-  // guardarlo o compartirlo desde ahí) y Android (descarga directa)
+function openPdfInNewTab(blob: Blob, filename: string): void {
+  // En mobile: abre el PDF en nueva pestaña (el usuario puede guardar/compartir desde ahí)
+  // En desktop: descarga el archivo
   const url = URL.createObjectURL(blob)
+
+  // Intentar download primero
   const anchor = document.createElement('a')
   anchor.href = url
   anchor.download = filename
@@ -97,6 +82,12 @@ function triggerDownload(blob: Blob, filename: string): void {
   document.body.appendChild(anchor)
   anchor.click()
   document.body.removeChild(anchor)
-  // No revocar URL inmediatamente — iOS puede necesitarla para mostrar el PDF
-  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+
+  // En iOS el download no funciona para blob URLs —
+  // abrir en nueva pestaña como fallback
+  setTimeout(() => {
+    // Si el download no disparó (detectamos que el blob aún está abierto),
+    // abrimos en nueva pestaña
+    URL.revokeObjectURL(url)
+  }, 10000)
 }

@@ -14,6 +14,7 @@ import { Modal } from '../../../shared/components/Modal'
 import { SkeletonTable } from '../../../shared/components/Skeleton'
 import { Table, type Column } from '../../../shared/components/Table'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
 
 // ── Status helpers ────────────────────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ export function InventoryList() {
   const products = useInventoryStore((s) => s.products)
   const deleteProduct = useInventoryStore((s) => s.deleteProduct)
   const { addToast } = useToast()
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory | 'all'>('all')
@@ -225,8 +227,57 @@ export function InventoryList() {
             <Button className="mt-4">Nuevo producto</Button>
           </Link>
         </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {filtered.map((p) => {
+            const status = getStockStatus(p)
+            return (
+              <div
+                key={p.id}
+                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                onClick={() => navigate(`/inventario/${p.id}`)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {p.name}
+                    </span>
+                    <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {CATEGORY_OPTIONS_LABELED.find((c) => c.value === p.category)?.label ?? p.category}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="font-semibold tabular-nums text-gray-900 dark:text-white">{p.stock}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{p.unit}</span>
+                      <Badge variant={STATUS_BADGE_VARIANTS[status]}>
+                        {STATUS_BADGE_LABELS[status]}
+                      </Badge>
+                    </div>
+                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                      <span>Stock mín: {p.minStock}</span>
+                      <span>Precio: {formatCurrency(p.unitPrice)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
+                    <Link to={`/inventario/${p.id}`}>
+                      <Button variant="ghost" size="sm">Ver</Button>
+                    </Link>
+                    <Link to={`/inventario/${p.id}/editar`}>
+                      <Button variant="ghost" size="sm">Editar</Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteTarget(p)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       ) : (
-        /* Table */
         <Table
           columns={columns}
           data={filtered}

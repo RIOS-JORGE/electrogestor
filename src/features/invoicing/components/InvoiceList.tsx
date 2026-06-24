@@ -6,6 +6,7 @@ import { Button } from '../../../shared/components/Button'
 import { Modal } from '../../../shared/components/Modal'
 import { SkeletonTable } from '../../../shared/components/Skeleton'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
 import { Table, type Column } from '../../../shared/components/Table'
 import type { Invoice, InvoiceStatus } from '../types'
 
@@ -45,6 +46,7 @@ export function InvoiceList() {
   const invoices = useInvoiceStore((s) => s.invoices)
   const deleteInvoice = useInvoiceStore((s) => s.deleteInvoice)
   const { addToast } = useToast()
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all')
@@ -218,8 +220,54 @@ export function InvoiceList() {
             <Button className="mt-4">Nueva factura</Button>
           </Link>
         </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {filtered.map((inv) => (
+            <div
+              key={inv.id}
+              className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+              onClick={() => navigate(`/facturacion/${inv.id}`)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
+                    {inv.number}
+                  </span>
+                  <div className="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                    {inv.clientName}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {formatCurrency(inv.total)}
+                    </span>
+                    <Badge variant={STATUS_BADGE_VARIANTS[inv.status]}>
+                      {STATUS_LABELS[inv.status]}
+                    </Badge>
+                  </div>
+                  <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
+                    {formatDate(inv.createdAt)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
+                  <Link to={`/facturacion/${inv.id}`}>
+                    <Button variant="ghost" size="sm">Ver</Button>
+                  </Link>
+                  <Link to={`/facturacion/${inv.id}/editar`}>
+                    <Button variant="ghost" size="sm">Editar</Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteTarget(inv)}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        /* Table */
         <Table
           columns={columns}
           data={filtered}

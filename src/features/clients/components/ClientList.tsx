@@ -6,6 +6,7 @@ import { Button } from '../../../shared/components/Button'
 import { Modal } from '../../../shared/components/Modal'
 import { SkeletonTable } from '../../../shared/components/Skeleton'
 import { useToast } from '../../../shared/hooks/useToast'
+import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
 import type { Client } from '../types'
 
 export function ClientList() {
@@ -15,6 +16,7 @@ export function ClientList() {
   const clients = useClientStore((s) => s.clients)
   const deleteClient = useClientStore((s) => s.deleteClient)
   const { addToast } = useToast()
+  const isMobile = useMediaQuery('(max-width: 767px)')
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 200)
@@ -129,6 +131,52 @@ export function ClientList() {
           <Link to="/clientes/nuevo">
             <Button className="mt-4">Nuevo cliente</Button>
           </Link>
+        </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {filtered.map((client) => (
+            <div key={client.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to={`/clientes/${client.id}/editar`}
+                    className="font-medium text-gray-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+                  >
+                    {client.name}
+                  </Link>
+                  <div className="mt-1 space-y-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {client.phone && (
+                      <span className="block">{client.phone}</span>
+                    )}
+                    {client.email && (
+                      <span className="block truncate">{client.email}</span>
+                    )}
+                  </div>
+                  <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">
+                    Creado {new Date(client.createdAt).toLocaleDateString('es-AR')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 ml-2">
+                  <Link to={`/clientes/${client.id}/editar`}>
+                    <button className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300" aria-label="Editar">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  </Link>
+                  <button
+                    onClick={() => setDeleteTarget(client)}
+                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500 dark:hover:bg-gray-800 dark:hover:text-red-400"
+                    aria-label="Eliminar"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <Table
