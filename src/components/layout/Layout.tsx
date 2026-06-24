@@ -23,11 +23,11 @@ export function Layout() {
 
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-          <div className="flex h-16 items-center justify-between px-6">
+          <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">ElectroGestor</h1>
           </div>
         </header>
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
