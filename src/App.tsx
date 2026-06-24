@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { ErrorBoundary } from './shared/components/ErrorBoundary'
@@ -17,6 +18,8 @@ import { InventarioPage } from './pages/InventarioPage'
 import { InventarioFormPage } from './pages/InventarioFormPage'
 import { InventarioDetailPage } from './pages/InventarioDetailPage'
 import { AjustesPage } from './pages/Ajustes'
+
+const ReportesPage = lazy(() => import('./features/reports/page'))
 
 function App() {
   return (
@@ -48,6 +51,14 @@ function App() {
             <Route path="/inventario/:id" element={<InventarioDetailPage />} />
             <Route path="/inventario/:id/editar" element={<InventarioFormPage />} />
             <Route path="/ajustes" element={<AjustesPage />} />
+            <Route
+              path="/reportes"
+              element={
+                <Suspense fallback={<div className="flex items-center justify-center py-12">Cargando...</div>}>
+                  <ReportesPage />
+                </Suspense>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
