@@ -4,6 +4,7 @@ import { Button } from '../../shared/components/Button'
 import { Modal } from '../../shared/components/Modal'
 import { exportData, importData } from '../../shared/utils/dataIO'
 import { useToast } from '../../shared/hooks/useToast'
+import { useAuth } from '../../providers/AuthProvider'
 
 interface NavItem {
   to: string
@@ -93,6 +94,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { isAdmin } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showImportModal, setShowImportModal] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -194,6 +196,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+                }`
+              }
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Admin</span>
+            </NavLink>
+          )}
         </nav>
 
         {/* Export / Import */}
@@ -251,7 +272,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-          <p className="text-xs text-gray-400 dark:text-gray-500">v0.1.0 — Offline</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">v0.2.0 — Cloud</p>
         </div>
 
       {/* Import confirmation modal */}
