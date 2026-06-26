@@ -119,10 +119,24 @@ src/
 
 ### Variables de entorno
 
+Crear un archivo `.env` en la raíz del proyecto:
+
 ```bash
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-anon-key
 ```
+
+> ⚠️ Las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` se obtienen desde Supabase Dashboard → Project Settings → API.
+> También deben configurarse en Vercel (Project Settings → Environment Variables) para el deploy.
+
+### Configurar autenticación en Supabase
+
+Después de crear el proyecto en Supabase y aplicar el schema (`supabase-migration.sql`):
+
+1. **Supabase Dashboard** → Authentication → Settings → URL Configuration
+2. **Site URL**: poné la URL de tu deploy (ej: `https://electrogestor.vercel.app`)
+3. **Redirect URLs**: agregá la URL de producción (`https://electrogestor.vercel.app/**`) y local (`http://localhost:3000/**`) para desarrollo
+4. **Authentication** → Providers → Google → habilitalo y configurá el Client ID / Secret desde Google Cloud Console
 
 ### Comandos
 
