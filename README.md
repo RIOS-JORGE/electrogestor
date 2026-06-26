@@ -14,8 +14,9 @@ Sistema de gestión integral para electricistas profesionales en Argentina. Mult
 | **Agenda** | Gestión de turnos con calendario para instalaciones y visitas técnicas. |
 | **Inventario** | Control de stock con alertas de bajo stock, ajustes e historial de movimientos (entradas/salidas/ajustes). |
 | **Reportes** | Dashboard con gráficos de ingresos, conversión de presupuestos, ranking de clientes, estadísticas de agenda y valor de inventario (lazy-loaded con Recharts). |
+| **Admin** | Gestión de usuarios por email (agregar/eliminar con roles admin o empleado), renombrar empresa. |
 
-Además incluye módulo de **Ajustes** (configuración de empresa, alias de Mercado Pago) y panel de **Admin** para gestión de usuarios y migración de datos.
+Además incluye módulo de **Ajustes** (configuración de empresa, alias de Mercado Pago).
 
 ## Stack
 
@@ -106,6 +107,8 @@ src/
 **Patrón de componentes compartidos**: `src/shared/components/` contiene UI genérica (Badge, Button, Card, DropdownMenu, Input, Modal, Select, Skeleton, Table, Toast). Cada feature usa estos componentes y agrega los suyos propios en `features/*/components/`.
 
 **Auth multi-tenant**: cada empresa tiene sus propios datos aislados por `company_id`. Los usuarios se autentican con Google OAuth y se vinculan a una empresa mediante `company_users`. Roles: `admin` y `employee`.
+
+**Invitación de usuarios**: un admin puede agregar usuarios por email desde el panel de Admin (rol admin o empleado). Cuando la persona inicia sesión con Google por primera vez, el sistema vincula automáticamente su cuenta al registro pendiente por email.
 
 **API layer**: cada feature tiene un `api.ts` que centraliza las operaciones contra Supabase (CRUD), manteniendo los stores limpios de lógica de red.
 
