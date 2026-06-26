@@ -110,7 +110,7 @@ export function InvoicePreview({ invoice, companyName }: InvoicePreviewProps) {
                 </tr>
               </thead>
               <tbody>
-                {materials.map((item, i) => (
+                {materials.map((item) => (
                   <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={tdStyle}>{item.quantity} {item.unit}</td>
                     <td style={tdStyle}>{item.description}</td>
@@ -138,7 +138,7 @@ export function InvoicePreview({ invoice, companyName }: InvoicePreviewProps) {
                 </tr>
               </thead>
               <tbody>
-                {labors.map((item, i) => (
+                {labors.map((item) => (
                   <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                     <td style={tdStyle}>{item.laborHours}</td>
                     <td style={tdStyle}>{item.description}</td>

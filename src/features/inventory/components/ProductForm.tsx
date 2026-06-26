@@ -75,7 +75,13 @@ export function ProductForm({ editProduct }: ProductFormProps) {
         addToast('Producto actualizado', 'success')
         navigate(`/inventario/${editProduct.id}`)
       } else {
-        const productId = await addProduct(data)
+        const now = Date.now()
+        const productId = await addProduct({
+          ...data,
+          id: crypto.randomUUID(),
+          createdAt: now,
+          updatedAt: now,
+        })
         if (productId) {
           addToast('Producto guardado', 'success')
           navigate('/inventario')

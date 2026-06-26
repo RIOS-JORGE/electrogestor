@@ -19,6 +19,9 @@ interface InventoryStore {
   movements: StockMovement[]
   loaded: boolean
 
+  /** Load all products and movements from Supabase. */
+  loadAll: () => Promise<void>
+
   /** Returns the created Product's id, or undefined if name already exists. */
   addProduct: (data: Product) => Promise<string | undefined>
   updateProduct: (id: string, data: Partial<Omit<Product, 'id' | 'createdAt'>>) => Promise<void>

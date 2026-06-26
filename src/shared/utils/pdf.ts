@@ -285,7 +285,6 @@ export function generateInvoicePdf(data: InvoicePdfData): GeneratePdfResult {
     doc.setFontSize(isLast ? 12 : 9)
     doc.setTextColor(line.color ?? GRAY)
 
-    const lineH = isLast ? 3 : 1.5
     doc.text(line.label, totalsLeft, y)
     doc.text(line.value, totalsLeft + totalsWidth, y, { align: 'right' })
     y += isLast ? 6 : 4

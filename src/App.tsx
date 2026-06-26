@@ -35,11 +35,12 @@ function NoAccessPage() {
   useEffect(() => {
     if (!user || state !== 'pending') return
 
+    const currentUser = user
     async function tryBootstrap() {
       setState('bootstrapping')
       const { error } = await supabase.rpc('bootstrap_company', {
-        user_id: user.id,
-        user_email: user.email ?? '',
+        user_id: currentUser.id,
+        user_email: currentUser.email ?? '',
       })
 
       if (error) {
