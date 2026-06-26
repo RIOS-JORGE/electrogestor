@@ -1,9 +1,11 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
 import { ErrorBoundary } from './shared/components/ErrorBoundary'
 import { AuthProvider, useAuth } from './providers/AuthProvider'
+import { supabase } from './lib/supabase'
 import { LoginPage } from './pages/LoginPage'
+import { useToast } from './shared/hooks/useToast'
 import { Dashboard } from './pages/Dashboard'
 import { ClientesPage } from './pages/Clientes'
 import { ClienteFormPage } from './pages/ClienteFormPage'
@@ -24,6 +26,78 @@ import { AdminPage } from './pages/AdminPage'
 
 const ReportesPage = lazy(() => import('./features/reports/page'))
 
+function NoAccessPage() {
+  const { user, signOut } = useAuth()
+  const { addToast } = useToast()
+  const [state, setState] = useState<'pending' | 'bootstrapping' | 'needs-admin'>('pending')
+
+  // ── Auto-bootstrap on mount (solo una vez) ────────────────────────────
+  useEffect(() => {
+    if (!user || state !== 'pending') return
+
+    async function tryBootstrap() {
+      setState('bootstrapping')
+      const { error } = await supabase.rpc('bootstrap_company', {
+        user_id: user.id,
+        user_email: user.email ?? '',
+      })
+
+      if (error) {
+        // Company already exists → user needs to be added by admin
+        setState('needs-admin')
+      } else {
+        addToast('¡Bienvenido! Tu empresa fue creada.', 'success')
+        window.location.reload()
+      }
+    }
+
+    tryBootstrap()
+  }, [user, state, addToast])
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
+      <div className="w-full max-w-sm">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30">
+              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              ElectroGestor
+            </h1>
+
+            {state === 'bootstrapping' ? (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Configurando tu empresa...
+                </p>
+              </div>
+            ) : state === 'needs-admin' ? (
+              <>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  La empresa ya fue creada. Necesitás que un administrador te
+                  agregue para acceder.
+                </p>
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={signOut}
+                    className="text-sm text-gray-400 underline hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ProtectedRoutes() {
   const { user, companyUser, loading } = useAuth()
 
@@ -41,23 +115,7 @@ function ProtectedRoutes() {
 
   // Logged in but not authorized for any company
   if (!companyUser) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
-        <div className="max-w-sm rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-900/30">
-            <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-7.364A9 9 0 1112 3a9 9 0 017.364 4.636z" />
-            </svg>
-          </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Sin acceso
-          </h2>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            No tenés acceso a ninguna empresa. Contactá al administrador.
-          </p>
-        </div>
-      </div>
-    )
+    return <NoAccessPage />
   }
 
   // Authorized → show app

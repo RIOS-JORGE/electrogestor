@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useInvoiceStore } from '../store'
+import { useAuth } from '../../../providers/AuthProvider'
 import { Badge } from '../../../shared/components/Badge'
 import { Button } from '../../../shared/components/Button'
 import { DropdownMenu } from '../../../shared/components/DropdownMenu'
@@ -9,7 +10,8 @@ import { Modal } from '../../../shared/components/Modal'
 import { useToast } from '../../../shared/hooks/useToast'
 import { useWebShare } from '../../../shared/hooks/useWebShare'
 import { useMediaQuery } from '../../../shared/hooks/useMediaQuery'
-import { generatePdfBlob, revokePdfUrl } from '../../../shared/utils/pdf'
+import { generateInvoicePdf, revokePdfUrl } from '../../../shared/utils/pdf'
+import { useSettingsStore } from '../../settings/store'
 import { InvoicePreview } from './InvoicePreview'
 import type { Invoice, InvoiceStatus } from '../types'
 import type { MaterialItem, LaborItem } from '../../quoting/types'
@@ -72,6 +74,9 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const updateInvoiceStatus = useInvoiceStore((s) => s.updateInvoiceStatus)
   const { addToast } = useToast()
   const { sharePdf } = useWebShare()
+  const { company } = useAuth()
+  const mpAlias = useSettingsStore((s) => s.mpAlias)
+  const businessName = useSettingsStore((s) => s.businessName)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<InvoiceStatus | null>(null)
   const [sharing, setSharing] = useState(false)
@@ -93,56 +98,25 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
       : 0
 
   const handlePrint = useCallback(() => {
-    window.print()
-  }, [])
+    const { url } = generateInvoicePdf({
+      invoice,
+      companyName: company?.name,
+      mpAlias,
+      businessName,
+    })
+    window.open(url, '_blank')
+  }, [invoice, company?.name, mpAlias, businessName])
 
   const handleShare = useCallback(async () => {
-    if (!previewRef.current) return
     setSharing(true)
-    const el = previewRef.current
-    // Temporarily show for capture — force white bg + black text
-    // to prevent dark mode from leaking into the PDF capture
-    el.style.setProperty('display', 'block', 'important')
-    el.style.position = 'absolute'
-    el.style.left = '-9999px'
-    el.style.top = '0'
 
-    // Inject style overrides so html2canvas can parse colors (it doesn't support oklch)
-    const colorFix = document.createElement('style')
-    colorFix.id = 'pdf-color-fix'
-    colorFix.textContent = `
-      .print-container, .print-container * {
-        color: inherit !important;
-        background-color: inherit !important;
-        border-color: inherit !important;
-      }
-      .text-gray-900 { color: #111827 !important; }
-      .text-gray-700 { color: #374151 !important; }
-      .text-gray-600 { color: #4b5563 !important; }
-      .text-gray-500 { color: #6b7280 !important; }
-      .text-gray-400 { color: #9ca3af !important; }
-      .text-gray-300 { color: #d1d5db !important; }
-      .text-black { color: #000000 !important; }
-      .text-red-600 { color: #dc2626 !important; }
-      .text-red-400 { color: #f87171 !important; }
-      .text-white { color: #ffffff !important; }
-      .text-blue-600 { color: #2563eb !important; }
-      .text-blue-400 { color: #60a5fa !important; }
-      .bg-white, .dark .bg-white, .dark .bg-gray-900 { background-color: #ffffff !important; }
-      .bg-gray-50 { background-color: #f9fafb !important; }
-      .border-gray-300, .dark .border-gray-300, .dark .border-gray-600 { border-color: #d1d5db !important; }
-      .border-gray-200, .dark .border-gray-200, .dark .border-gray-700 { border-color: #e5e7eb !important; }
-      .border-gray-100 { border-color: #f3f4f6 !important; }
-    `
-    el.prepend(colorFix)
-
-    // Force the element itself to have light background and black text
-    el.style.setProperty('background', '#ffffff', 'important')
-    el.style.setProperty('color', '#000000', 'important')
     try {
-      // Wait one frame for the browser to render the element
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-      const { blob, url } = await generatePdfBlob(el)
+      const { blob, url } = generateInvoicePdf({
+        invoice,
+        companyName: company?.name,
+        mpAlias,
+        businessName,
+      })
       const message = `ElectroGestor - Factura ${invoice.number} - Total: $${invoice.total.toFixed(2)}`
       await sharePdf(blob, `factura-${invoice.number}.pdf`, message)
       revokePdfUrl(url)
@@ -151,18 +125,9 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
       console.error('Error al compartir factura:', err)
       addToast('Error al compartir la factura', 'error')
     } finally {
-      el.style.display = ''
-      el.style.position = ''
-      el.style.left = ''
-      el.style.top = ''
-      el.style.background = ''
-      el.style.color = ''
-      // Remove the injected color fix style
-      const fix = document.getElementById('pdf-color-fix')
-      if (fix) fix.remove()
       setSharing(false)
     }
-  }, [invoice, sharePdf, addToast])
+  }, [invoice, company?.name, mpAlias, businessName, sharePdf, addToast])
 
   const handleStatusChange = useCallback(
     (newStatus: InvoiceStatus) => {
@@ -499,8 +464,8 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
       </div>
 
       {/* Preview for print and share */}
-      <div className="print-only print-block" ref={previewRef}>
-        <InvoicePreview invoice={invoice} />
+      <div className="print-only print-block bg-white" ref={previewRef} style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+        <InvoicePreview invoice={invoice} companyName={company?.name} />
       </div>
 
       {/* Cancel confirmation modal */}
@@ -535,3 +500,5 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     </div>
   )
 }
+
+

@@ -1,6 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useInvoiceStore } from './store'
 import type { Invoice } from './types'
+
+vi.mock('./api', () => ({
+  getAllInvoices: vi.fn(),
+  createInvoice: vi.fn(),
+  updateInvoice: vi.fn(),
+  deleteInvoice: vi.fn(),
+  updateInvoiceStatus: vi.fn(),
+  nextInvoiceNumber: vi.fn(),
+}))
+
+import * as api from './api'
+import { setCompanyId } from '../../lib/supabase'
 
 function createInvoice(overrides: Partial<Invoice> = {}): Invoice {
   const now = Date.now()
@@ -19,120 +31,188 @@ function createInvoice(overrides: Partial<Invoice> = {}): Invoice {
   }
 }
 
+async function addInvoiceToStore(inv: Invoice): Promise<void> {
+  vi.mocked(api.nextInvoiceNumber).mockResolvedValue({ data: inv.number || 'FAC-0001', error: null })
+  vi.mocked(api.createInvoice).mockResolvedValue({ data: inv, error: null })
+  await useInvoiceStore.getState().addInvoice(inv)
+}
+
 beforeEach(() => {
-  localStorage.clear()
-  useInvoiceStore.setState({ invoices: [] })
+  setCompanyId('test-company')
+  useInvoiceStore.setState({ invoices: [], loaded: false })
+  vi.clearAllMocks()
 })
 
 describe('InvoiceStore', () => {
+  describe('loadAll', () => {
+    it('sets invoices and loaded=true on success', async () => {
+      const invoices = [createInvoice()]
+      vi.mocked(api.getAllInvoices).mockResolvedValue({ data: invoices, error: null })
+
+      await useInvoiceStore.getState().loadAll()
+
+      expect(useInvoiceStore.getState().invoices).toEqual(invoices)
+      expect(useInvoiceStore.getState().loaded).toBe(true)
+    })
+
+    it('does not set loaded on error', async () => {
+      vi.mocked(api.getAllInvoices).mockResolvedValue({ data: null, error: 'Network error' })
+
+      await useInvoiceStore.getState().loadAll()
+
+      expect(useInvoiceStore.getState().loaded).toBe(false)
+      expect(useInvoiceStore.getState().invoices).toEqual([])
+    })
+  })
+
   describe('CRUD', () => {
-    it('adds an invoice', () => {
+    it('adds an invoice', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
+      await addInvoiceToStore(inv)
 
       expect(useInvoiceStore.getState().invoices).toHaveLength(1)
       expect(useInvoiceStore.getState().invoices[0].clientName).toBe('Juan Pérez')
     })
 
-    it('updates an invoice', () => {
-      const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
+    it('does not add on nextInvoiceNumber error', async () => {
+      vi.mocked(api.nextInvoiceNumber).mockResolvedValue({ data: null, error: 'No sequence' })
 
-      useInvoiceStore.getState().updateInvoice(inv.id, { clientName: 'Carlos' })
-      const updated = useInvoiceStore.getState().getInvoiceById(inv.id)
-      expect(updated?.clientName).toBe('Carlos')
-      expect(updated?.updatedAt).toBeGreaterThanOrEqual(inv.createdAt)
+      await useInvoiceStore.getState().addInvoice(createInvoice())
+
+      expect(useInvoiceStore.getState().invoices).toHaveLength(0)
+      expect(api.createInvoice).not.toHaveBeenCalled()
     })
 
-    it('deletes an invoice', () => {
+    it('updates an invoice on success', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().deleteInvoice(inv.id)
+      await addInvoiceToStore(inv)
+
+      const updated = { ...inv, clientName: 'Carlos', updatedAt: Date.now() + 1000 }
+      vi.mocked(api.updateInvoice).mockResolvedValue({ data: updated, error: null })
+
+      await useInvoiceStore.getState().updateInvoice(inv.id, { clientName: 'Carlos' })
+
+      const result = useInvoiceStore.getState().getInvoiceById(inv.id)
+      expect(result?.clientName).toBe('Carlos')
+      expect(result?.updatedAt).toBeGreaterThan(inv.createdAt)
+    })
+
+    it('does not update on API error', async () => {
+      const inv = createInvoice()
+      await addInvoiceToStore(inv)
+
+      vi.mocked(api.updateInvoice).mockResolvedValue({ data: null, error: 'DB error' })
+
+      await useInvoiceStore.getState().updateInvoice(inv.id, { clientName: 'Carlos' })
+
+      expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.clientName).toBe('Juan Pérez')
+    })
+
+    it('deletes an invoice on success', async () => {
+      const inv = createInvoice()
+      await addInvoiceToStore(inv)
+
+      vi.mocked(api.deleteInvoice).mockResolvedValue({ data: undefined, error: null })
+
+      await useInvoiceStore.getState().deleteInvoice(inv.id)
 
       expect(useInvoiceStore.getState().invoices).toHaveLength(0)
     })
-  })
 
-  describe('getNextNumber', () => {
-    it('returns FAC-0001 when no invoices exist', () => {
-      expect(useInvoiceStore.getState().getNextNumber()).toBe('FAC-0001')
-    })
+    it('does not delete on API error', async () => {
+      const inv = createInvoice()
+      await addInvoiceToStore(inv)
 
-    it('generates sequential numbers', () => {
-      useInvoiceStore.getState().addInvoice(createInvoice({ number: 'FAC-0001' }))
-      expect(useInvoiceStore.getState().getNextNumber()).toBe('FAC-0002')
+      vi.mocked(api.deleteInvoice).mockResolvedValue({ data: null, error: 'DB error' })
 
-      useInvoiceStore.getState().addInvoice(
-        createInvoice({ id: 'inv-2', number: 'FAC-0002' }),
-      )
-      expect(useInvoiceStore.getState().getNextNumber()).toBe('FAC-0003')
-    })
+      await useInvoiceStore.getState().deleteInvoice(inv.id)
 
-    it('handles non-standard number format gracefully', () => {
-      useInvoiceStore.getState().addInvoice(createInvoice({ number: 'FAC-abc' }))
-      // regex doesn't match → max stays 0 → returns FAC-0001
-      expect(useInvoiceStore.getState().getNextNumber()).toBe('FAC-0001')
+      expect(useInvoiceStore.getState().invoices).toHaveLength(1)
     })
   })
 
   describe('state machine', () => {
-    it('allows draft → issued', () => {
+    it('allows draft → issued', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'issued')
+      await addInvoiceToStore(inv)
+
+      const issued = { ...inv, status: 'issued' as const, issuedAt: Date.now() }
+      vi.mocked(api.updateInvoiceStatus).mockResolvedValue({ data: issued, error: null })
+
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'issued')
 
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('issued')
     })
 
-    it('allows issued → paid', () => {
+    it('allows issued → paid', async () => {
       const inv = createInvoice({ status: 'issued', issuedAt: Date.now() })
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
+      await addInvoiceToStore(inv)
+
+      const paid = { ...inv, status: 'paid' as const, paidAt: Date.now() }
+      vi.mocked(api.updateInvoiceStatus).mockResolvedValue({ data: paid, error: null })
+
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
 
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('paid')
     })
 
-    it('allows draft → cancelled', () => {
+    it('allows draft → cancelled', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'cancelled')
+      await addInvoiceToStore(inv)
+
+      const cancelled = { ...inv, status: 'cancelled' as const }
+      vi.mocked(api.updateInvoiceStatus).mockResolvedValue({ data: cancelled, error: null })
+
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'cancelled')
 
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('cancelled')
     })
 
-    it('prevents draft → paid (invalid transition)', () => {
+    it('prevents draft → paid (invalid transition)', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
+      await addInvoiceToStore(inv)
 
-      // State must remain unchanged
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
+
+      // State must remain unchanged — API should NOT be called
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('draft')
+      expect(api.updateInvoiceStatus).not.toHaveBeenCalled()
     })
 
-    it('prevents paid → any transition', () => {
+    it('prevents paid → any transition', async () => {
       const inv = createInvoice({ status: 'paid', paidAt: Date.now() })
-      useInvoiceStore.getState().addInvoice(inv)
+      await addInvoiceToStore(inv)
 
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'draft')
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'draft')
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('paid')
 
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'cancelled')
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'cancelled')
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.status).toBe('paid')
+
+      expect(api.updateInvoiceStatus).not.toHaveBeenCalled()
     })
 
-    it('sets issuedAt when transitioning to issued', () => {
+    it('sets issuedAt when transitioning to issued', async () => {
       const inv = createInvoice()
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'issued')
+      await addInvoiceToStore(inv)
+
+      const issued = { ...inv, status: 'issued' as const, issuedAt: Date.now() }
+      vi.mocked(api.updateInvoiceStatus).mockResolvedValue({ data: issued, error: null })
+
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'issued')
 
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.issuedAt).toBeDefined()
       expect(typeof useInvoiceStore.getState().getInvoiceById(inv.id)?.issuedAt).toBe('number')
     })
 
-    it('sets paidAt when transitioning to paid', () => {
+    it('sets paidAt when transitioning to paid', async () => {
       const inv = createInvoice({ status: 'issued', issuedAt: Date.now() })
-      useInvoiceStore.getState().addInvoice(inv)
-      useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
+      await addInvoiceToStore(inv)
+
+      const paid = { ...inv, status: 'paid' as const, paidAt: Date.now() }
+      vi.mocked(api.updateInvoiceStatus).mockResolvedValue({ data: paid, error: null })
+
+      await useInvoiceStore.getState().updateInvoiceStatus(inv.id, 'paid')
 
       expect(useInvoiceStore.getState().getInvoiceById(inv.id)?.paidAt).toBeDefined()
       expect(typeof useInvoiceStore.getState().getInvoiceById(inv.id)?.paidAt).toBe('number')

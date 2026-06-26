@@ -1,51 +1,56 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { Settings } from './types'
-import { settingsSchema } from './types'
+import { getCompanyId } from '../../lib/supabase'
+import { getSettings, upsertSettings } from './api'
 import { useToastStore } from '../../shared/hooks/useToast'
 
 interface SettingsStore {
   mpAlias: string
   businessName: string
-  updateSettings: (partial: Partial<Settings>) => void
+  loaded: boolean
+  loadAll: () => Promise<void>
+  updateSettings: (partial: Partial<Settings>) => Promise<void>
 }
 
-export const useSettingsStore = create<SettingsStore>()(
-  persist(
-    (set) => ({
-      mpAlias: '',
-      businessName: '',
+export const useSettingsStore = create<SettingsStore>()((set) => ({
+  mpAlias: '',
+  businessName: '',
+  loaded: false,
 
-      updateSettings: (partial) => {
-        set((state) => ({ ...state, ...partial }))
-      },
-    }),
-    {
-      name: 'electrogestor-settings',
-      onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          console.error('Error al cargar configuración:', error)
-          useToastStore.getState().addToast(
-            'Error al cargar configuración guardada',
-            'error',
-          )
-          return
-        }
+  loadAll: async () => {
+    try {
+      const companyId = getCompanyId()
+      const result = await getSettings(companyId)
+      if (result.data) {
+        set({
+          mpAlias: result.data.mpAlias ?? '',
+          businessName: result.data.businessName ?? '',
+          loaded: true,
+        })
+      } else {
+        // No settings yet (fresh company) — not an error
+        set({ loaded: true })
+      }
+    } catch (err) {
+      console.error('Error al cargar configuración:', err)
+      set({ loaded: true })
+    }
+  },
 
-        if (!state) return
-
-        const result = settingsSchema.safeParse(state)
-        if (result.success) {
-          state.mpAlias = result.data.mpAlias
-          state.businessName = result.data.businessName
-        } else {
-          console.warn(
-            'Configuración inválida en localStorage, usando valores por defecto',
-          )
-          state.mpAlias = ''
-          state.businessName = ''
-        }
-      },
-    },
-  ),
-)
+  updateSettings: async (partial) => {
+    try {
+      const companyId = getCompanyId()
+      const result = await upsertSettings(companyId, partial)
+      if (result.data) {
+        set((state) => ({
+          mpAlias: result.data!.mpAlias ?? state.mpAlias,
+          businessName: result.data!.businessName ?? state.businessName,
+        }))
+      } else {
+        useToastStore.getState().addToast('Error al guardar configuración', 'error')
+      }
+    } catch {
+      useToastStore.getState().addToast('Error al guardar configuración', 'error')
+    }
+  },
+}))

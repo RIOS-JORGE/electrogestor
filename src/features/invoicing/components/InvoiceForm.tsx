@@ -44,7 +44,6 @@ export function InvoiceForm({ editInvoice }: InvoiceFormProps) {
   const navigate = useNavigate()
   const addInvoice = useInvoiceStore((s) => s.addInvoice)
   const updateInvoice = useInvoiceStore((s) => s.updateInvoice)
-  const getNextNumber = useInvoiceStore((s) => s.getNextNumber)
   const generateId = useIdGenerator()
   const { addToast } = useToast()
   const isEditMode = editInvoice != null
@@ -117,14 +116,14 @@ export function InvoiceForm({ editInvoice }: InvoiceFormProps) {
   }, [editInvoice, reset])
 
   const submitInvoice = useCallback(
-    (data: InvoiceFormData) => {
+    async (data: InvoiceFormData) => {
       const subtotal = calculateSubtotal(data.items as QuoteItem[])
       const ivaAmount = data.includeIVA ? calculateIVA(subtotal, 21) : 0
       const discountAmount = calculateDiscount(subtotal, data.discountPercent)
       const total = calculateTotal(subtotal, ivaAmount, discountAmount)
 
       if (isEditMode && editInvoice) {
-        updateInvoice(editInvoice.id, {
+        await updateInvoice(editInvoice.id, {
           clientId: data.clientId || undefined,
           clientName: data.clientName,
           items: data.items as any,
@@ -140,7 +139,7 @@ export function InvoiceForm({ editInvoice }: InvoiceFormProps) {
       } else {
         const invoice: Invoice = {
           id: generateId(),
-          number: getNextNumber(),
+          number: '',
           clientId: data.clientId || undefined,
           clientName: data.clientName,
           items: data.items as any,
@@ -154,12 +153,12 @@ export function InvoiceForm({ editInvoice }: InvoiceFormProps) {
           createdAt: Date.now(),
           updatedAt: Date.now(),
         }
-        addInvoice(invoice)
+        await addInvoice(invoice)
         addToast('Factura guardada como borrador', 'success')
         navigate('/facturacion')
       }
     },
-    [addInvoice, updateInvoice, generateId, navigate, addToast, isEditMode, editInvoice, getNextNumber],
+    [addInvoice, updateInvoice, generateId, navigate, addToast, isEditMode, editInvoice],
   )
 
   const onSaveDraft = handleSubmit((data: any) =>

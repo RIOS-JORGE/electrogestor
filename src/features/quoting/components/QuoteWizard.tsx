@@ -97,7 +97,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
   }, [editQuote, reset])
 
   const submitQuote = useCallback(
-    (data: QuoteFormData, status: QuoteStatus) => {
+    async (data: QuoteFormData, status: QuoteStatus) => {
       const subtotal = calculateSubtotal(data.items)
       const ivaAmount = data.includeIVA ? calculateIVA(subtotal, 21) : 0
       const discountAmount = calculateDiscount(
@@ -107,7 +107,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
       const total = calculateTotal(subtotal, ivaAmount, discountAmount)
 
       if (isEditMode && editQuote) {
-        updateQuote(editQuote.id, {
+        await updateQuote(editQuote.id, {
           clientId: data.clientId || undefined,
           clientName: data.clientName,
           items: data.items,
@@ -140,7 +140,7 @@ export function QuoteWizard({ editQuote }: QuoteWizardProps) {
           createdAt: Date.now(),
           updatedAt: Date.now(),
         }
-        addQuote(quote)
+        await addQuote(quote)
         addToast(
           status === 'draft'
             ? 'Presupuesto guardado como borrador'

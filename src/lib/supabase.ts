@@ -10,3 +10,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// ── Company ID en memoria (single-tenant) ────────────────────
+let _companyId: string | null = null
+
+export function setCompanyId(id: string | null): void {
+  _companyId = id
+}
+
+/**
+ * Returns the currently active company ID.
+ * AuthProvider calls setCompanyId() after loading the user's company.
+ * @throws If no company is active.
+ */
+export function getCompanyId(): string {
+  if (!_companyId) {
+    throw new Error('No hay una empresa activa. Iniciá sesión.')
+  }
+  return _companyId
+}
+
+/**
+ * Check if an active company is set.
+ */
+export function hasActiveCompany(): boolean {
+  return _companyId !== null
+}

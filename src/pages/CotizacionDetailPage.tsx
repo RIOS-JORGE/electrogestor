@@ -11,7 +11,8 @@ import { QuotePreview } from '../features/quoting/components/QuotePreview'
 import { useToast } from '../shared/hooks/useToast'
 import { useWebShare } from '../shared/hooks/useWebShare'
 import { useMediaQuery } from '../shared/hooks/useMediaQuery'
-import { generatePdfBlob, revokePdfUrl } from '../shared/utils/pdf'
+import { generateQuotePdf, revokePdfUrl } from '../shared/utils/pdf'
+import { useAuth } from '../providers/AuthProvider'
 import { useInvoiceStore } from '../features/invoicing/store'
 import type { Invoice } from '../features/invoicing/types'
 import type { QuoteStatus, MaterialItem, LaborItem } from '../features/quoting/types'
@@ -77,8 +78,6 @@ export function CotizacionDetailPage() {
 
   const invoices = useInvoiceStore((s) => s.invoices)
   const addInvoice = useInvoiceStore((s) => s.addInvoice)
-  const getNextInvoiceNumber = useInvoiceStore((s) => s.getNextNumber)
-
   useEffect(() => {
     if (quote) {
       document.title = `Presupuesto - ${quote.clientName} - #${quote.id.slice(0, 8).toUpperCase()} | ElectroGestor`
@@ -86,60 +85,24 @@ export function CotizacionDetailPage() {
   }, [quote])
 
   const { sharePdf } = useWebShare()
+  const { company } = useAuth()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [sharing, setSharing] = useState(false)
   const previewRef = useRef<HTMLDivElement>(null)
   const isMobile = useMediaQuery('(max-width: 767px)')
 
   const handlePrint = useCallback(() => {
-    window.print()
-  }, [])
+    if (!quote) return
+    const { url } = generateQuotePdf({ quote, companyName: company?.name })
+    window.open(url, '_blank')
+  }, [quote, company?.name])
 
   const handleShare = useCallback(async () => {
-    if (!previewRef.current || !quote) return
+    if (!quote) return
     setSharing(true)
-    const el = previewRef.current
-    // Temporarily show for capture — force white bg + black text
-    // to prevent dark mode from leaking into the PDF capture
-    el.style.setProperty('display', 'block', 'important')
-    el.style.position = 'absolute'
-    el.style.left = '-9999px'
-    el.style.top = '0'
 
-    // Inject style overrides so html2canvas can parse colors (it doesn't support oklch)
-    const colorFix = document.createElement('style')
-    colorFix.id = 'pdf-color-fix'
-    colorFix.textContent = `
-      .print-container, .print-container * {
-        color: inherit !important;
-        background-color: inherit !important;
-        border-color: inherit !important;
-      }
-      .text-gray-900 { color: #111827 !important; }
-      .text-gray-700 { color: #374151 !important; }
-      .text-gray-600 { color: #4b5563 !important; }
-      .text-gray-500 { color: #6b7280 !important; }
-      .text-gray-400 { color: #9ca3af !important; }
-      .text-gray-300 { color: #d1d5db !important; }
-      .text-black { color: #000000 !important; }
-      .text-red-600 { color: #dc2626 !important; }
-      .text-white { color: #ffffff !important; }
-      .text-blue-600 { color: #2563eb !important; }
-      .bg-white { background-color: #ffffff !important; }
-      .bg-gray-50 { background-color: #f9fafb !important; }
-      .border-gray-300 { border-color: #d1d5db !important; }
-      .border-gray-200 { border-color: #e5e7eb !important; }
-      .border-gray-100 { border-color: #f3f4f6 !important; }
-    `
-    el.prepend(colorFix)
-
-    // Force the element itself to have light background and black text
-    el.style.setProperty('background', '#ffffff', 'important')
-    el.style.setProperty('color', '#000000', 'important')
     try {
-      // Wait one frame for the browser to render the element
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
-      const { blob, url } = await generatePdfBlob(el)
+      const { blob, url } = generateQuotePdf({ quote, companyName: company?.name })
       const message = `ElectroGestor - Presupuesto COT-${quote.id.slice(0, 8).toUpperCase()} - Total: $${quote.total.toFixed(2)}`
       await sharePdf(blob, `presupuesto-${quote.id.slice(0, 8)}.pdf`, message)
       revokePdfUrl(url)
@@ -148,18 +111,9 @@ export function CotizacionDetailPage() {
       console.error('Error al compartir presupuesto:', err)
       addToast('Error al compartir el presupuesto', 'error')
     } finally {
-      el.style.display = ''
-      el.style.position = ''
-      el.style.left = ''
-      el.style.top = ''
-      el.style.background = ''
-      el.style.color = ''
-      // Remove the injected color fix style
-      const fix = document.getElementById('pdf-color-fix')
-      if (fix) fix.remove()
       setSharing(false)
     }
-  }, [quote, sharePdf, addToast])
+  }, [quote, company?.name, sharePdf, addToast])
 
   const handleStatusChange = useCallback(
     (newStatus: QuoteStatus) => {
@@ -196,7 +150,7 @@ export function CotizacionDetailPage() {
     if (!quote) return
     const invoice: Invoice = {
       id: crypto.randomUUID(),
-      number: getNextInvoiceNumber(),
+      number: '',
       quoteId: quote.id,
       clientId: quote.clientId || undefined,
       clientName: quote.clientName,
@@ -213,7 +167,7 @@ export function CotizacionDetailPage() {
     addInvoice(invoice)
     addToast('Factura generada desde la cotización', 'success')
     navigate(`/facturacion/${invoice.id}`)
-  }, [quote, getNextInvoiceNumber, addInvoice, navigate, addToast])
+  }, [quote, addInvoice, navigate, addToast])
 
   const handleDelete = useCallback(() => {
     if (!id) return

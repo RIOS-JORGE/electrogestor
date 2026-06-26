@@ -64,9 +64,9 @@ export function AppointmentForm({ editAppointment, onSuccess, onCancel }: Appoin
     }
   }, [selectedClientId, clients, setValue])
 
-  const onSubmit: SubmitHandler<AppointmentFormData> = (data) => {
+  const onSubmit: SubmitHandler<AppointmentFormData> = async (data) => {
     if (editAppointment) {
-      updateAppointment(editAppointment.id, {
+      await updateAppointment(editAppointment.id, {
         title: data.title,
         clientId: data.clientId || undefined,
         clientName: data.clientName,
@@ -78,7 +78,7 @@ export function AppointmentForm({ editAppointment, onSuccess, onCancel }: Appoin
       addToast('Turno actualizado', 'success')
     } else {
       const now = Date.now()
-      addAppointment({
+      await addAppointment({
         id: generateId(),
         title: data.title,
         clientId: data.clientId || undefined,

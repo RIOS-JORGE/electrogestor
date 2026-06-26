@@ -1,3 +1,3 @@
-export function useIdGenerator(): () => string {
-  return () => crypto.randomUUID()
+export function useIdGenerator(): (serverValue?: string) => string {
+  return (serverValue?: string) => serverValue ?? crypto.randomUUID()
 }

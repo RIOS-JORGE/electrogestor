@@ -5,63 +5,70 @@ import { Card, CardHeader, CardBody } from '../shared/components/Card'
 import { Button } from '../shared/components/Button'
 import { Input } from '../shared/components/Input'
 import { useToast } from '../shared/hooks/useToast'
-import type { Company, CompanyUser } from '../lib/types'
+import type { CompanyUser } from '../lib/types'
 
 export function AdminPage() {
   const { isAdmin, company } = useAuth()
   const { addToast } = useToast()
-  const [users, setUsers] = useState<CompanyUser[]>([])
-  const [loading, setLoading] = useState(true)
 
-  // New user form
-  const [newEmail, setNewEmail] = useState('')
-  const [newRole, setNewRole] = useState<'admin' | 'employee'>('employee')
-  const [adding, setAdding] = useState(false)
-
-  // New company form (super admin only)
+  // ── Company name ──────────────────────────────────────────────────────────
   const [newCompanyName, setNewCompanyName] = useState('')
-  const [newCompanyEmail, setNewCompanyEmail] = useState('')
-  const [creating, setCreating] = useState(false)
+  const [renaming, setRenaming] = useState(false)
 
+  const handleRename = useCallback(async () => {
+    if (!company || !newCompanyName.trim()) return
+    setRenaming(true)
+    const { error } = await supabase
+      .from('companies')
+      .update({ name: newCompanyName.trim() })
+      .eq('id', company.id)
+    if (error) {
+      addToast(`Error al renombrar: ${error.message}`, 'error')
+    } else {
+      addToast('Empresa renombrada', 'success')
+      setNewCompanyName('')
+      window.location.reload()
+    }
+    setRenaming(false)
+  }, [company, newCompanyName, addToast])
+
+  // ── Users ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     document.title = 'Admin | ElectroGestor'
   }, [])
 
+  const [users, setUsers] = useState<CompanyUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
+
+  const [newEmail, setNewEmail] = useState('')
+  const [newRole, setNewRole] = useState<'admin' | 'employee'>('employee')
+  const [adding, setAdding] = useState(false)
+
+  // ── Fetch users ──────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
     if (!company) return
-    setLoading(true)
+    setLoadingUsers(true)
     const { data } = await supabase
       .from('company_users')
       .select('*')
       .eq('company_id', company.id)
       .order('created_at', { ascending: true })
     if (data) setUsers(data as CompanyUser[])
-    setLoading(false)
+    setLoadingUsers(false)
   }, [company])
 
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
 
-  // ── Add user to current company ───────────────────────────────────────────
+  // ── Add user ─────────────────────────────────────────────────────────────
   const handleAddUser = useCallback(async () => {
     if (!company || !newEmail.trim()) return
     setAdding(true)
 
-    // Check if the email exists in auth.users
-    const { data: authUsers, error: authError } = await supabase
-      .from('users')
-      .select('id, email')
-      .eq('email', newEmail.trim())
-
-    // Note: 'users' view is not available directly; we use admin API instead.
-    // Actually, Supabase exposes auth.users via a limited view.
-    // Alternative: we add the user to company_users and let RLS handle it.
-    // The user will get access when they log in.
-
     const { error } = await supabase.from('company_users').insert({
       company_id: company.id,
-      user_id: 'pending', // We'll update this when the user signs in
+      user_id: '',
       email: newEmail.trim(),
       role: newRole,
     })
@@ -76,7 +83,7 @@ export function AdminPage() {
     setAdding(false)
   }, [company, newEmail, newRole, addToast, fetchUsers])
 
-  // ── Remove user ───────────────────────────────────────────────────────────
+  // ── Remove user ──────────────────────────────────────────────────────────
   const handleRemoveUser = useCallback(
     async (userId: string) => {
       const { error } = await supabase
@@ -93,40 +100,7 @@ export function AdminPage() {
     [addToast, fetchUsers],
   )
 
-  // ── Create new company ────────────────────────────────────────────────────
-  const handleCreateCompany = useCallback(async () => {
-    if (!newCompanyName.trim() || !newCompanyEmail.trim()) return
-    setCreating(true)
 
-    const { data: comp, error: compError } = await supabase
-      .from('companies')
-      .insert({ name: newCompanyName.trim() })
-      .select()
-      .single()
-
-    if (compError || !comp) {
-      addToast(`Error al crear empresa: ${compError?.message}`, 'error')
-      setCreating(false)
-      return
-    }
-
-    // Add the admin user
-    const { error: userError } = await supabase.from('company_users').insert({
-      company_id: comp.id,
-      user_id: 'pending',
-      email: newCompanyEmail.trim(),
-      role: 'admin',
-    })
-
-    if (userError) {
-      addToast(`Empresa creada pero error al agregar admin: ${userError.message}`, 'error')
-    } else {
-      addToast(`Empresa "${newCompanyName.trim()}" creada. El admin recibirá acceso al iniciar sesión.`, 'success')
-      setNewCompanyName('')
-      setNewCompanyEmail('')
-    }
-    setCreating(false)
-  }, [newCompanyName, newCompanyEmail, addToast])
 
   if (!isAdmin) {
     return (
@@ -140,7 +114,9 @@ export function AdminPage() {
     <div className="space-y-8">
       <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Admin</h2>
 
+      {/* ════════════════════════════════════════════════════════════════════ */}
       {/* ── Current company info ─────────────────────────────────────────── */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
       <Card padding="lg">
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -148,13 +124,31 @@ export function AdminPage() {
           </h3>
         </CardHeader>
         <CardBody>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex-1">
+              <Input
+                label="Nuevo nombre"
+                placeholder="Ej: Martínez Servicios Eléctricos"
+                value={newCompanyName}
+                onChange={(e) => setNewCompanyName(e.target.value)}
+              />
+            </div>
+            <Button
+              onClick={handleRename}
+              disabled={renaming || !newCompanyName.trim()}
+            >
+              {renaming ? 'Guardando...' : 'Renombrar'}
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-gray-400">
             ID: {company?.id}
           </p>
         </CardBody>
       </Card>
 
-      {/* ── Users list ───────────────────────────────────────────────────── */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
+      {/* ── Users ────────────────────────────────────────────────────────── */}
+      {/* ════════════════════════════════════════════════════════════════════ */}
       <Card padding="lg">
         <CardHeader>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -165,7 +159,7 @@ export function AdminPage() {
           </p>
         </CardHeader>
         <CardBody>
-          {loading ? (
+          {loadingUsers ? (
             <p className="text-sm text-gray-400">Cargando...</p>
           ) : users.length === 0 ? (
             <p className="text-sm text-gray-400">Sin usuarios todavía.</p>
@@ -174,7 +168,7 @@ export function AdminPage() {
               {users.map((u) => (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-800"
+                  className="flex flex-col gap-2 rounded-lg border border-gray-100 px-4 py-3 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -230,44 +224,6 @@ export function AdminPage() {
             </div>
             <Button onClick={handleAddUser} disabled={adding || !newEmail.trim()}>
               {adding ? 'Agregando...' : 'Agregar'}
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* ── Create new company (admin only) ──────────────────────────────── */}
-      <Card padding="lg">
-        <CardHeader>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Nueva empresa
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Creá una nueva empresa con su admin. El usuario recibirá acceso al iniciar sesión.
-          </p>
-        </CardHeader>
-        <CardBody>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1">
-              <Input
-                label="Nombre de la empresa"
-                placeholder="Ej: Martín Servicios Eléctricos"
-                value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                label="Email del admin"
-                placeholder="Ej: martin@gmail.com"
-                value={newCompanyEmail}
-                onChange={(e) => setNewCompanyEmail(e.target.value)}
-              />
-            </div>
-            <Button
-              onClick={handleCreateCompany}
-              disabled={creating || !newCompanyName.trim() || !newCompanyEmail.trim()}
-            >
-              {creating ? 'Creando...' : 'Crear empresa'}
             </Button>
           </div>
         </CardBody>

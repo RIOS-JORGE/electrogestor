@@ -1,3 +1,10 @@
+// ── API result wrapper ────────────────────────────────────────────────────────
+
+export interface ApiResult<T> {
+  data: T | null
+  error: string | null
+}
+
 // ── Database types (mirrors Supabase schema) ──────────────────────────────────
 
 export interface Company {
@@ -12,6 +19,7 @@ export interface CompanyUser {
   user_id: string
   email: string
   role: 'admin' | 'employee'
+  is_root?: boolean
   created_at: string
 }
 
