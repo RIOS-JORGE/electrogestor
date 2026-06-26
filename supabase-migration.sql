@@ -279,6 +279,12 @@ with check (
   )
 );
 
+-- Company users: users can link their user_id on first login (invited by email, user_id=null)
+create policy "users can link their user_id on first login"
+on public.company_users for update
+using (email = auth.email() and user_id is null)
+with check (email = auth.email() and user_id = auth.uid());
+
 -- Company users: admins can delete
 create policy "admins can delete company_users"
 on public.company_users for delete
