@@ -263,6 +263,32 @@ create policy "users can read own company users"
 on public.company_users for select
 using (company_id = public.get_user_company_id());
 
+-- Company users: admins can insert (pre-add users by email before they sign up)
+create policy "admins can insert company_users"
+on public.company_users for insert
+with check (
+  company_id = public.get_user_company_id()
+  and exists (
+    select 1 from public.company_users
+    where user_id = auth.uid()
+    and company_id = public.get_user_company_id()
+    and role = 'admin'
+  )
+);
+
+-- Company users: admins can delete
+create policy "admins can delete company_users"
+on public.company_users for delete
+using (
+  company_id = public.get_user_company_id()
+  and exists (
+    select 1 from public.company_users
+    where user_id = auth.uid()
+    and company_id = public.get_user_company_id()
+    and role = 'admin'
+  )
+);
+
 -- Clients: company-scoped
 create policy "company_scoped_select" on public.clients for select
   using (company_id = public.get_user_company_id());

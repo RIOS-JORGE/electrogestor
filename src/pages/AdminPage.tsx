@@ -68,7 +68,7 @@ export function AdminPage() {
 
     const { error } = await supabase.from('company_users').insert({
       company_id: company.id,
-      user_id: '',
+      user_id: null,
       email: newEmail.trim(),
       role: newRole,
     })
