@@ -50,7 +50,7 @@ export function ClientForm({ client }: ClientFormProps) {
         },
   })
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
     const normalized = {
       name: data.name,
       phone: data.phone ?? '',
@@ -59,19 +59,20 @@ export function ClientForm({ client }: ClientFormProps) {
       notes: data.notes ?? '',
     }
     if (client) {
-      updateClient(client.id, normalized)
+      await updateClient(client.id, normalized)
       addToast('Cliente actualizado', 'success')
+      navigate('/clientes')
     } else {
       const now = Date.now()
-      addClient({
+      await addClient({
         id: generateId(),
         ...normalized,
         createdAt: now,
         updatedAt: now,
       })
       addToast('Cliente creado', 'success')
+      navigate('/clientes')
     }
-    navigate('/clientes')
   }
 
   return (

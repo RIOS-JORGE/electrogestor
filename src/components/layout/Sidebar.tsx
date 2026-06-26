@@ -1,9 +1,5 @@
-import { useRef, useState, useCallback } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Button } from '../../shared/components/Button'
-import { Modal } from '../../shared/components/Modal'
-import { exportData, importData } from '../../shared/utils/dataIO'
-import { useToast } from '../../shared/hooks/useToast'
+import { useAuth } from '../../providers/AuthProvider'
 
 interface NavItem {
   to: string
@@ -93,58 +89,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [importing, setImporting] = useState(false)
-  const { addToast } = useToast()
-
-  const handleExport = useCallback(() => {
-    try {
-      exportData()
-      addToast('Datos exportados correctamente', 'success')
-    } catch {
-      addToast('Error al exportar los datos', 'error')
-    }
-  }, [addToast])
-
-  const handleFileSelected = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
-      if (file) {
-        setPendingFile(file)
-        setShowImportModal(true)
-      }
-      // Reset so the same file can be re-selected
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    },
-    [],
-  )
-
-  const handleImportConfirm = useCallback(async () => {
-    if (!pendingFile) return
-    setImporting(true)
-    try {
-      const result = await importData(pendingFile)
-      if (result.success) {
-        addToast(
-          `Datos importados: ${result.clientsCount} clientes, ${result.quotesCount} presupuestos`,
-          'success',
-        )
-      } else {
-        addToast(
-          `Error de importación: ${result.errors.join('; ')}`,
-          'error',
-        )
-      }
-    } catch {
-      addToast('Error inesperado al importar datos', 'error')
-    } finally {
-      setImporting(false)
-      setShowImportModal(false)
-      setPendingFile(null)
-    }
-  }, [pendingFile, addToast])
+  const { isAdmin } = useAuth()
 
   return (
     <>
@@ -194,43 +139,26 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
+                }`
+              }
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Admin</span>
+            </NavLink>
+          )}
         </nav>
-
-        {/* Export / Import */}
-        <div className="border-t border-gray-100 px-3 py-3 dark:border-gray-800">
-          <p className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
-            Datos
-          </p>
-          <div className="space-y-1">
-            <button
-              onClick={handleExport}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Exportar datos
-            </button>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Importar datos
-            </button>
-          </div>
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleFileSelected}
-            className="hidden"
-            aria-hidden="true"
-          />
-        </div>
 
         {/* Dark mode toggle */}
         <div className="border-t border-gray-100 px-3 py-3 dark:border-gray-800">
@@ -251,42 +179,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-          <p className="text-xs text-gray-400 dark:text-gray-500">v0.1.0 — Offline</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">v0.2.0 — Cloud</p>
         </div>
 
-      {/* Import confirmation modal */}
-      <Modal
-        isOpen={showImportModal}
-        onClose={() => {
-          if (!importing) {
-            setShowImportModal(false)
-            setPendingFile(null)
-          }
-        }}
-        title="Importar datos"
-        size="sm"
-      >
-        <p className="mb-2 text-sm text-gray-600">
-          Esto <strong>reemplazará todos tus datos</strong> actuales (clientes y
-          presupuestos) por los del archivo de respaldo.
-        </p>
-        <p className="mb-6 text-sm text-gray-600">¿Estás seguro?</p>
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setShowImportModal(false)
-              setPendingFile(null)
-            }}
-            disabled={importing}
-          >
-            Cancelar
-          </Button>
-          <Button variant="danger" onClick={handleImportConfirm} disabled={importing}>
-            {importing ? 'Importando...' : 'Importar y reemplazar'}
-          </Button>
-        </div>
-      </Modal>
     </aside>
   </>
 )

@@ -25,6 +25,7 @@
   /* Hide scrollbars on html/body */
   html {
     overflow: hidden !important;
+    background: white !important;
   }
 
   body {

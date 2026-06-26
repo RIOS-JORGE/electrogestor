@@ -4,6 +4,7 @@ import { PaymentInfoSection } from '../../../shared/components/PaymentInfoSectio
 
 interface InvoicePreviewProps {
   invoice: Invoice
+  companyName?: string
 }
 
 function formatDate(ts: number): string {
@@ -18,7 +19,7 @@ function formatCurrency(n: number): string {
   return `$${n.toFixed(2)}`
 }
 
-export function InvoicePreview({ invoice }: InvoicePreviewProps) {
+export function InvoicePreview({ invoice, companyName }: InvoicePreviewProps) {
   const materials = invoice.items.filter(
     (i): i is MaterialItem => i.type === 'material',
   )
@@ -31,106 +32,90 @@ export function InvoicePreview({ invoice }: InvoicePreviewProps) {
     invoice.discount != null ? subtotal * (invoice.discount / 100) : 0
 
   return (
-    <div className="print-container mx-auto max-w-4xl bg-white p-8 dark:bg-gray-900 print:m-0 print:p-6">
-      {/* Company header */}
-      <div className="border-b border-gray-300 pb-6 dark:border-gray-600 print:border-gray-400">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 print:text-black">
-              ElectroGestor
-            </h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 print:text-gray-700">
-              Soluciones eléctricas profesionales
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 print:text-black">
-              FACTURA
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 print:text-gray-700">
-              {invoice.number}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 print:text-gray-700">
-              {formatDate(invoice.createdAt)}
-            </p>
-          </div>
+    <div className="print-container bg-white p-6" style={{ fontFamily: 'Helvetica, Arial, sans-serif', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* HEADER — Company + Invoice info side by side */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="flex items-start justify-between pb-4" style={{ borderBottom: '2px solid #1e40af' }}>
+        <div>
+          <h1 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e40af', margin: 0 }}>
+            {companyName || 'ElectroGestor'}
+          </h1>
+          <p style={{ fontSize: '10px', color: '#6b7280', marginTop: '2px' }}>
+            Soluciones eléctricas profesionales
+          </p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e40af', margin: 0, letterSpacing: '2px' }}>
+            FACTURA
+          </p>
+          <p style={{ fontSize: '11px', color: '#374151', marginTop: '4px', fontWeight: '600' }}>
+            {invoice.number}
+          </p>
+          <p style={{ fontSize: '10px', color: '#6b7280', marginTop: '2px' }}>
+            {formatDate(invoice.createdAt)}
+          </p>
         </div>
       </div>
 
-      {/* Invoice dates row */}
-      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-1 text-sm text-gray-600 dark:text-gray-400 print:text-gray-700">
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* DATES ROW */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1" style={{ fontSize: '10px', color: '#4b5563' }}>
         {invoice.issuedAt && (
-          <p>
-            <span className="font-medium">Fecha de emisión:</span>{' '}
-            {formatDate(invoice.issuedAt)}
+          <p style={{ margin: 0 }}>
+            <strong>Fecha de emisión:</strong> {formatDate(invoice.issuedAt)}
           </p>
         )}
         {invoice.dueDate && (
-          <p>
-            <span className="font-medium">Vencimiento:</span>{' '}
-            {formatDate(invoice.dueDate)}
+          <p style={{ margin: 0 }}>
+            <strong>Vencimiento:</strong> {formatDate(invoice.dueDate)}
           </p>
         )}
         {invoice.paidAt && (
-          <p>
-            <span className="font-medium">Fecha de pago:</span>{' '}
-            {formatDate(invoice.paidAt)}
+          <p style={{ margin: 0 }}>
+            <strong>Fecha de pago:</strong> {formatDate(invoice.paidAt)}
           </p>
         )}
       </div>
 
-      {/* Client info */}
-      <div className="mt-6 border-b border-gray-200 pb-6 dark:border-gray-700 print:border-gray-300">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 print:text-gray-700">
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CLIENT */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-4 pb-3" style={{ borderBottom: '1px solid #e5e7eb' }}>
+        <p style={{ fontSize: '9px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: '#6b7280', margin: '0 0 3px' }}>
           Cliente
-        </h2>
-        <p className="text-base font-medium text-gray-900 dark:text-gray-100 print:text-black">
+        </p>
+        <p style={{ fontSize: '12px', fontWeight: '600', color: '#111827', margin: 0 }}>
           {invoice.clientName}
         </p>
       </div>
 
-      {/* Items table */}
-      <div className="mt-6">
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* ITEMS TABLES */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-4">
         {materials.length > 0 && (
           <div className="mb-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 print:text-gray-700">
+            <p style={{ fontSize: '9px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: '#6b7280', marginBottom: '6px' }}>
               Materiales
-            </h3>
-            <table className="quote-items w-full border-collapse">
+            </p>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-gray-300 dark:border-gray-600 print:border-gray-400">
-                  <th className="py-2 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Cant.
-                  </th>
-                  <th className="py-2 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Descripción
-                  </th>
-                  <th className="py-2 pr-4 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    P. Unit
-                  </th>
-                  <th className="py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Subtotal
-                  </th>
+                <tr style={{ background: '#f3f4f6' }}>
+                  <th style={thStyle}>Cant.</th>
+                  <th style={{ ...thStyle, width: '45%' }}>Descripción</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>P. Unit</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Subtotal</th>
                 </tr>
               </thead>
               <tbody>
-                {materials.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-gray-100 dark:border-gray-700 print:border-gray-200"
-                  >
-                    <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-300 print:text-black">
-                      {item.quantity} {item.unit}
-                    </td>
-                    <td className="py-3 pr-4 text-sm text-gray-900 dark:text-gray-100 print:text-black">
-                      {item.description}
-                    </td>
-                    <td className="py-3 pr-4 text-right text-sm text-gray-700 dark:text-gray-300 print:text-black">
-                      {formatCurrency(item.unitPrice)}
-                    </td>
-                    <td className="py-3 text-right text-sm text-gray-900 dark:text-gray-100 print:text-black">
-                      {formatCurrency(item.quantity * item.unitPrice)}
-                    </td>
+                {materials.map((item, i) => (
+                  <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                    <td style={tdStyle}>{item.quantity} {item.unit}</td>
+                    <td style={tdStyle}>{item.description}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{formatCurrency(item.unitPrice)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: '600', fontFamily: 'monospace' }}>{formatCurrency(item.quantity * item.unitPrice)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -140,44 +125,25 @@ export function InvoicePreview({ invoice }: InvoicePreviewProps) {
 
         {labors.length > 0 && (
           <div className="mb-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 print:text-gray-700">
+            <p style={{ fontSize: '9px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: '#6b7280', marginBottom: '6px' }}>
               Mano de Obra
-            </h3>
-            <table className="quote-items w-full border-collapse">
+            </p>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr className="border-b border-gray-300 dark:border-gray-600 print:border-gray-400">
-                  <th className="py-2 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Hs.
-                  </th>
-                  <th className="py-2 pr-4 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Descripción
-                  </th>
-                  <th className="py-2 pr-4 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    $/h
-                  </th>
-                  <th className="py-2 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 print:text-gray-700">
-                    Subtotal
-                  </th>
+                <tr style={{ background: '#f3f4f6' }}>
+                  <th style={thStyle}>Hs.</th>
+                  <th style={{ ...thStyle, width: '45%' }}>Descripción</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>$/h</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Subtotal</th>
                 </tr>
               </thead>
               <tbody>
-                {labors.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-gray-100 dark:border-gray-700 print:border-gray-200"
-                  >
-                    <td className="py-3 pr-4 text-sm text-gray-700 dark:text-gray-300 print:text-black">
-                      {item.laborHours}
-                    </td>
-                    <td className="py-3 pr-4 text-sm text-gray-900 dark:text-gray-100 print:text-black">
-                      {item.description}
-                    </td>
-                    <td className="py-3 pr-4 text-right text-sm text-gray-700 dark:text-gray-300 print:text-black">
-                      {formatCurrency(item.hourlyRate)}
-                    </td>
-                    <td className="py-3 text-right text-sm text-gray-900 dark:text-gray-100 print:text-black">
-                      {formatCurrency(item.laborHours * item.hourlyRate)}
-                    </td>
+                {labors.map((item, i) => (
+                  <tr key={item.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                    <td style={tdStyle}>{item.laborHours}</td>
+                    <td style={tdStyle}>{item.description}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{formatCurrency(item.hourlyRate)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: '600', fontFamily: 'monospace' }}>{formatCurrency(item.laborHours * item.hourlyRate)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -186,54 +152,88 @@ export function InvoicePreview({ invoice }: InvoicePreviewProps) {
         )}
       </div>
 
-      {/* Totals */}
-      <div className="mt-6 border-t border-gray-300 pt-4 dark:border-gray-600 print:border-gray-400">
-        <div className="ml-auto w-72 space-y-2">
-          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 print:text-gray-700">
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* TOTALS */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-4 pt-3" style={{ borderTop: '2px solid #1e40af' }}>
+        <div style={{ marginLeft: 'auto', width: '240px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#4b5563', padding: '3px 0' }}>
             <span>Subtotal</span>
-            <span>{formatCurrency(subtotal)}</span>
+            <span style={{ fontFamily: 'monospace' }}>{formatCurrency(subtotal)}</span>
           </div>
           {invoice.iva != null && (
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 print:text-gray-700">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#4b5563', padding: '3px 0' }}>
               <span>IVA ({invoice.iva}%)</span>
-              <span>{formatCurrency(ivaAmount)}</span>
+              <span style={{ fontFamily: 'monospace' }}>{formatCurrency(ivaAmount)}</span>
             </div>
           )}
           {invoice.discount != null && invoice.discount > 0 && (
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 print:text-gray-700">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#dc2626', padding: '3px 0' }}>
               <span>Descuento ({invoice.discount}%)</span>
-              <span className="text-red-600 dark:text-red-400 print:text-red-700">
-                -{formatCurrency(discountAmount)}
-              </span>
+              <span style={{ fontFamily: 'monospace' }}>-{formatCurrency(discountAmount)}</span>
             </div>
           )}
-          <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-gray-900 dark:text-gray-100 dark:border-gray-600 print:border-gray-400 print:text-black">
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #111827', paddingTop: '6px', marginTop: '2px', fontSize: '14px', fontWeight: 'bold', color: '#111827' }}>
             <span>Total</span>
-            <span>{formatCurrency(invoice.total)}</span>
+            <span style={{ fontFamily: 'monospace' }}>{formatCurrency(invoice.total)}</span>
           </div>
         </div>
       </div>
 
-      {/* Payment info */}
-      <PaymentInfoSection total={invoice.total} />
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* PAYMENT INFO */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-6">
+        <PaymentInfoSection total={invoice.total} plain />
+      </div>
 
-      {/* Notes */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* NOTES */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       {invoice.notes && (
-        <div className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700 print:border-gray-300">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 print:text-gray-700">
+        <div className="mt-4 pt-3" style={{ borderTop: '1px solid #e5e7eb' }}>
+          <p style={{ fontSize: '9px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px', color: '#6b7280', marginBottom: '4px' }}>
             Notas
-          </h3>
-          <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 print:text-black">
+          </p>
+          <p style={{ fontSize: '10px', color: '#374151', margin: 0, whiteSpace: 'pre-wrap' }}>
             {invoice.notes}
           </p>
         </div>
       )}
 
-      {/* Footer */}
-      <div className="mt-8 border-t border-gray-200 pt-4 text-center text-xs text-gray-400 dark:text-gray-500 dark:border-gray-700 print:border-gray-300 print:text-gray-600">
-        <p>ElectroGestor — Soluciones eléctricas profesionales</p>
-        <p className="mt-1">Gracias por confiar en nosotros.</p>
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* FOOTER */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mt-6 pt-3" style={{ borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
+        <p style={{ fontSize: '9px', color: '#9ca3af', margin: 0 }}>
+          {companyName || 'ElectroGestor'} — Soluciones eléctricas profesionales
+        </p>
+        <p style={{ fontSize: '9px', color: '#9ca3af', marginTop: '2px' }}>
+          Gracias por confiar en nosotros.
+        </p>
       </div>
     </div>
   )
+}
+
+// ── Shared styles ──────────────────────────────────────────────────────────────
+
+const thStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '9px',
+  fontWeight: '600',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  color: '#374151',
+  textAlign: 'left',
+  borderBottom: '2px solid #d1d5db',
+}
+
+const tdStyle: React.CSSProperties = {
+  padding: '6px 8px',
+  fontSize: '10px',
+  color: '#374151',
+  textAlign: 'left',
+  overflowWrap: 'break-word',
+  wordBreak: 'break-word',
 }

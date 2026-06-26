@@ -61,9 +61,9 @@ export function ProductForm({ editProduct }: ProductFormProps) {
   }, [editProduct, reset])
 
   const onSubmit = useCallback(
-    (data: ProductFormData) => {
+    async (data: ProductFormData) => {
       if (isEditMode && editProduct) {
-        updateProduct(editProduct.id, {
+        await updateProduct(editProduct.id, {
           name: data.name.trim(),
           category: data.category,
           unit: data.unit,
@@ -75,7 +75,7 @@ export function ProductForm({ editProduct }: ProductFormProps) {
         addToast('Producto actualizado', 'success')
         navigate(`/inventario/${editProduct.id}`)
       } else {
-        const productId = addProduct(data)
+        const productId = await addProduct(data)
         if (productId) {
           addToast('Producto guardado', 'success')
           navigate('/inventario')

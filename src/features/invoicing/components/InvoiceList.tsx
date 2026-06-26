@@ -85,7 +85,7 @@ export function InvoiceList() {
         key: 'number',
         header: 'Número',
         render: (inv) => (
-          <span className="font-mono text-sm font-medium text-gray-900">
+          <span className="font-mono text-sm font-medium text-gray-900 dark:text-white">
             {inv.number}
           </span>
         ),
@@ -95,7 +95,7 @@ export function InvoiceList() {
         header: 'Cliente',
         sortable: true,
         render: (inv) => (
-          <span className="font-medium text-gray-900">{inv.clientName}</span>
+          <span className="font-medium text-gray-900 dark:text-white">{inv.clientName}</span>
         ),
       },
       {
@@ -103,7 +103,7 @@ export function InvoiceList() {
         header: 'Total',
         sortable: true,
         render: (inv) => (
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-white">
             {formatCurrency(inv.total)}
           </span>
         ),
@@ -122,7 +122,7 @@ export function InvoiceList() {
         header: 'Fecha',
         sortable: true,
         render: (inv) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 dark:text-gray-400">
             {formatDate(inv.createdAt)}
           </span>
         ),
@@ -169,8 +169,8 @@ export function InvoiceList() {
             onClick={() => setStatusFilter(f.key)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               statusFilter === f.key
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'
             }`}
           >
             {f.label}
@@ -185,7 +185,7 @@ export function InvoiceList() {
           placeholder="Buscar por cliente..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder:text-gray-500"
         />
       </div>
 
@@ -194,8 +194,8 @@ export function InvoiceList() {
         <SkeletonTable rows={5} cols={6} />
       ) : /* Empty state */
       invoices.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white py-16 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+        <div className="rounded-lg border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
             <svg
               className="h-8 w-8 text-blue-500"
               fill="none"
@@ -210,10 +210,10 @@ export function InvoiceList() {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             No hay facturas todavía
           </h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Creá tu primera factura para empezar.
           </p>
           <Link to="/facturacion/nueva">
