@@ -258,10 +258,13 @@ on public.companies for update
 using (id = public.get_user_company_id())
 with check (id = public.get_user_company_id());
 
--- Company users: read own company users
+-- Company users: read own company users (by company OR by email for unlinked)
 create policy "users can read own company users"
 on public.company_users for select
-using (company_id = public.get_user_company_id());
+using (
+  company_id = public.get_user_company_id()
+  or email = auth.email()
+);
 
 -- Company users: admins can insert (pre-add users by email before they sign up)
 create policy "admins can insert company_users"
